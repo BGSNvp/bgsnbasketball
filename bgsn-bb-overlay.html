@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <title>BGSN Basketball Overlay</title>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Roboto+Condensed:wght@700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Roboto+Condensed:wght@700;900&family=Orbitron:wght@900&family=Barlow+Condensed:wght@600&display=swap" rel="stylesheet">
 <style>
-  :root { --home: #1a6fc4; --away: #c41a1a; --gold: #ffcc00; }
+  :root { --home: #1a6fc4; --away: #c41a1a; --gold: #ffcc00; --tgold: #ffd960; --chrome-hi: #e8ecf4; --gold-glow: rgba(255,217,96,0.6); }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { width: 1920px; height: 1080px; background: transparent; overflow: hidden; font-family: 'Roboto Condensed', sans-serif; color: #fff; }
 
   /* ESPN-style stacked corner bug, bottom-left */
-  .bug { position: absolute; left: 60px; bottom: 60px; box-shadow: 0 4px 18px rgba(0,0,0,0.65); transition: opacity 0.4s; }
+  .bug { position: absolute; left: 60px; bottom: var(--bug-b, 96px); box-shadow: 0 4px 18px rgba(0,0,0,0.65); transition: opacity 0.4s; }
   .bug.hidden { opacity: 0; }
   .main { display: grid; grid-template-columns: auto 160px; }
   .rows { display: flex; flex-direction: column; gap: 2px; background: #000; }
@@ -50,9 +50,41 @@
   .period { font: 700 22px 'Oswald', sans-serif; color: var(--gold); letter-spacing: 3px; }
 
   .sponsor { background: #0b0b0b; border-top: 2px solid var(--gold); padding: 4px 12px; font: 700 18px 'Oswald', sans-serif;
-    letter-spacing: 3px; text-transform: uppercase; white-space: nowrap; }
+    letter-spacing: 3px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #sponsorName { transition: opacity 0.5s; }
   .sponsor small { color: var(--gold); font-size: 14px; margin-right: 10px; }
   .sponsor.off { display: none; }
+
+  /* ─── Two bottom tickers (same look and controls as the football overlay) ─── */
+  .ticker { --tk-h: var(--tk1-h, 38px); position: absolute; bottom: var(--tk1-off, var(--tk2-h, 38px)); left: 0; right: 0; height: var(--tk-h);
+    background: linear-gradient(180deg, #131320 0%, #08080e 100%); display: flex; align-items: center; overflow: hidden;
+    border-top: 2px solid; border-image: linear-gradient(90deg, rgba(60,65,80,0.5), var(--chrome-hi), var(--tgold), var(--chrome-hi), rgba(60,65,80,0.5)) 1;
+    box-shadow: inset 0 2px 8px rgba(255,255,255,0.04); }
+  .ticker::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent 10%, var(--gold-glow) 50%, transparent 90%); box-shadow: 0 0 12px var(--gold-glow); pointer-events: none; z-index: 5; }
+  .ticker::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent); pointer-events: none; z-index: 5; }
+  .ticker-content { flex: 1; overflow: hidden; display: flex; align-items: center; height: 100%; }
+  .ticker-label { background: linear-gradient(180deg, #1e1e34 0%, #12121e 50%, #0a0a14 100%); font-family: 'Orbitron', sans-serif; font-weight: 900; font-style: italic;
+    font-size: calc(var(--tk-h) * 0.474); letter-spacing: 1px; padding: 0 16px; height: 100%; display: flex; align-items: center; white-space: nowrap; flex-shrink: 0;
+    border-right: 3px solid; border-image: linear-gradient(180deg, var(--chrome-hi), var(--tgold), rgba(0,0,0,0.5)) 1; position: relative; z-index: 2;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.3); }
+  .ticker-label span { background: linear-gradient(180deg, #ffe88a 0%, #ffd960 25%, #c8a020 65%, #a07818 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 6px rgba(255,217,96,0.4)) drop-shadow(0 1px 1px rgba(0,0,0,0.6)); }
+  .ticker-label::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none;
+    background: repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(255,255,255,0.02) 2px, rgba(255,255,255,0.02) 3px),
+      linear-gradient(180deg, rgba(255,255,255,0.08), transparent 40%, rgba(0,0,0,0.2)); }
+  .ticker-label::after { content: ''; position: absolute; top: 0; right: -3px; width: 16px; height: 100%; pointer-events: none;
+    background: linear-gradient(180deg, rgba(200,168,75,0.25), transparent 30%, transparent 70%, rgba(200,168,75,0.25)); }
+  .ticker-scroll { display: flex; white-space: nowrap; will-change: transform; transform: translate3d(0,0,0); backface-visibility: hidden; }
+  .ticker-item { color: #e8e8e8; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: calc(var(--tk-h) * 0.737); letter-spacing: 1px; padding: 0 30px; line-height: var(--tk-h); }
+  .ticker-sep { color: #ffd960; padding: 0 8px; font-size: calc(var(--tk-h) * 0.737); line-height: var(--tk-h); text-shadow: 0 0 8px rgba(255,217,96,0.5); }
+  @keyframes scroll-left { 0% { transform: translate3d(0,0,0); } 100% { transform: translate3d(-50%,0,0); } }
+  .ticker.ticker-lower { --tk-h: var(--tk2-h, 38px); bottom: 0; }
+  .ticker-lower .ticker-item { color: #f0c040; }
+  .ticker-lower .ticker-sep { color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.3); }
+  .ticker-lower .ticker-label span { background: none; -webkit-background-clip: initial; background-clip: initial; -webkit-text-fill-color: #fff; color: #fff;
+    filter: drop-shadow(0 0 6px rgba(255,255,255,0.35)) drop-shadow(0 1px 1px rgba(0,0,0,0.6)); }
 </style>
 </head>
 <body>
@@ -76,6 +108,9 @@
   </div>
   <div class="sponsor off" id="sponsor"><small>PRESENTED BY</small><span id="sponsorName"></span></div>
 </div>
+
+<div class="ticker" id="tickerBar"><div class="ticker-label"><span>BGSN</span></div><div class="ticker-content"><div class="ticker-scroll" id="tickerScroll"></div></div></div>
+<div class="ticker ticker-lower" id="ticker2Bar"><div class="ticker-label"><span id="ticker2DateTime"></span></div><div class="ticker-content"><div class="ticker-scroll" id="ticker2Scroll"></div></div></div>
 
 <script type="module">
   import { subscribe } from './bb-store.js';
@@ -121,8 +156,8 @@
     $('possHome').classList.toggle('on', d.poss === 'home');
     $('possAway').classList.toggle('on', d.poss === 'away');
     $('period').textContent = d.period;
-    $('sponsorName').textContent = d.sponsor || '';
-    $('sponsor').classList.toggle('off', !d.sponsor);
+    setSponsors(d.sponsor);
+    renderTickers(d);
     fitNames();
     tick();
   }
@@ -134,6 +169,96 @@
     const apply = () => boxes.forEach(b => b.style.fontSize = fs + 'px');
     apply();
     while (boxes.some(b => b.scrollWidth > b.clientWidth) && fs > 16) { fs -= 1; apply(); }
+  }
+
+  // ─── Tickers (ported from the football overlay) ───
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const splitItems = s => String(s || '').split('|').map(t => t.trim()).filter(Boolean);
+  const itemsHtml = list => list.map(t => `<span class="ticker-item">${esc(t)}</span><span class="ticker-sep">&#9670;</span>`).join('');
+  function fillTicker(el, items, speed, shift) {
+    const sig = items.join('|');
+    if (el.dataset.tickerSig === sig) { applyTickerSpeed(el, speed, shift); return; }
+    el.dataset.tickerSig = sig; el.dataset.anim = '';
+    if (!items.length) { el.innerHTML = ''; el.style.animation = 'none'; return; }
+    // Repeat items until one set is wider than the screen, then double it for a seamless loop
+    let set = [...items];
+    const probe = document.createElement('div');
+    probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;';
+    probe.innerHTML = itemsHtml(set);
+    el.parentNode.appendChild(probe);
+    while (probe.scrollWidth < 1920 && set.length < items.length * 20) { set = set.concat(items); probe.innerHTML = itemsHtml(set); }
+    probe.remove();
+    el.innerHTML = itemsHtml([...set, ...set]);
+    applyTickerSpeed(el, speed, shift);
+  }
+  function applyTickerSpeed(el, speed, shift) {
+    requestAnimationFrame(() => {
+      if (!(speed > 0)) return setStatic(el, Number(shift) || 0);
+      const halfW = el.scrollWidth / 2;
+      if (halfW > 0) setAnimation(el, halfW / speed, halfW);
+    });
+  }
+  // Only restart the crawl when its duration changes, and keep the current position when it does
+  function setAnimation(el, durSec, halfW) {
+    const anim = `scroll-left ${durSec}s linear infinite`;
+    if (el.dataset.anim === anim) return;
+    let offsetPx = 0;
+    try {
+      const prev = el.getAnimations ? el.getAnimations()[0] : null;
+      const prevHalfW = Number(el.dataset.halfW) || 0;
+      if (prev && prevHalfW > 0 && prev.currentTime != null) {
+        const prevDur = Number(prev.effect.getTiming().duration) / 1000;
+        if (prevDur > 0) offsetPx = prevHalfW * (((Number(prev.currentTime) / 1000) % prevDur) / prevDur);
+      }
+    } catch (e) { offsetPx = 0; }
+    el.dataset.anim = anim; el.dataset.halfW = halfW;
+    el.style.transform = ''; el.style.animation = anim;
+    if (offsetPx > 0) {
+      try { const next = el.getAnimations()[0]; if (next) next.currentTime = Math.min(offsetPx / halfW, 1) * durSec * 1000; } catch (e) {}
+    }
+  }
+  // Speed 0 parks the ticker at a manual left/right offset
+  function setStatic(el, shiftPx) {
+    const key = 'static:' + shiftPx;
+    if (el.dataset.anim === key) return;
+    el.dataset.anim = key; el.style.animation = 'none'; el.style.transform = 'translate3d(' + shiftPx + 'px,0,0)';
+  }
+  const numIn = (v, lo, hi, def) => { const n = Number(v); return Number.isFinite(n) ? Math.max(lo, Math.min(hi, n)) : def; };
+  function renderTickers(d) {
+    const root = document.documentElement.style;
+    const h1 = numIn(d.tickerSize1, 20, 90, 38), h2 = numIn(d.tickerSize2, 20, 90, 38);
+    const on1 = d.ticker1On !== false, on2 = d.ticker2On !== false;
+    root.setProperty('--tk1-h', h1 + 'px'); root.setProperty('--tk2-h', h2 + 'px');
+    root.setProperty('--tk1-off', on2 ? h2 + 'px' : '0px');
+    $('tickerBar').style.display = on1 ? '' : 'none';
+    $('ticker2Bar').style.display = on2 ? '' : 'none';
+    // Scoreboard sits 20px above whichever tickers are showing
+    const stack = (on1 ? h1 : 0) + (on2 ? h2 : 0);
+    root.setProperty('--bug-b', (stack ? stack + 20 : 60) + 'px');
+    fillTicker($('tickerScroll'), splitItems(d.ticker1), numIn(d.tickerSpeed1, 0, 120, 35), numIn(d.tickerShift1, -2000, 2000, 0));
+    fillTicker($('ticker2Scroll'), splitItems(d.ticker2), numIn(d.tickerSpeed2, 0, 120, 33), numIn(d.tickerShift2, -2000, 2000, 0));
+  }
+  function updateDateTime() {
+    const now = new Date();
+    const p2 = n => String(n).padStart(2, '0');
+    let h = now.getHours(); const ampm = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12;
+    $('ticker2DateTime').textContent = p2(now.getMonth() + 1) + '-' + p2(now.getDate()) + '-' + String(now.getFullYear()).slice(-2) + ' ' + h + ':' + p2(now.getMinutes()) + ' ' + ampm;
+  }
+  updateDateTime(); setInterval(updateDateTime, 30000);
+
+  // ─── Sponsor: separate with | and they take turns every 15 seconds ───
+  let sponsors = [], spIdx = 0, spTimer = null;
+  function setSponsors(raw) {
+    const list = splitItems(raw);
+    $('sponsor').classList.toggle('off', !list.length);
+    if (list.join('|') === sponsors.join('|')) return;
+    sponsors = list; spIdx = 0;
+    const el = $('sponsorName'); el.textContent = list[0] || ''; el.style.opacity = 1;
+    clearInterval(spTimer); spTimer = null;
+    if (list.length > 1) spTimer = setInterval(() => {
+      el.style.opacity = 0;
+      setTimeout(() => { spIdx = (spIdx + 1) % sponsors.length; el.textContent = sponsors[spIdx] || ''; el.style.opacity = 1; }, 500);
+    }, 15000);
   }
 
   function tick() {

@@ -6,7 +6,11 @@ export const DEFAULTS = {
   homeNameX: 0, awayNameX: 0, homeNameY: 0, awayNameY: 0,
   homeScore: 0, awayScore: 0, homeFouls: 0, awayFouls: 0, bonusAt: 5,
   homeTO: 5, awayTO: 5, maxTO: 5, period: '1ST', periodLen: 480,
-  clockMs: 480000, clockRunning: false, clockStartAt: 0, poss: '', sponsor: '', visible: true
+  clockMs: 480000, clockRunning: false, clockStartAt: 0, poss: '', sponsor: '', visible: true,
+  ticker1: 'Welcome to BGSN Sports Network | Follow us for live coverage every game day',
+  ticker2: 'Welcome to BGSN Sports Network | Follow us for live coverage every game day',
+  ticker1On: true, ticker2On: true, tickerSpeed1: 35, tickerSpeed2: 33,
+  tickerShift1: 0, tickerShift2: 0, tickerSize1: 38, tickerSize2: 38
 };
 
 export function withDefaults(d) { return Object.assign({}, DEFAULTS, d || {}); }

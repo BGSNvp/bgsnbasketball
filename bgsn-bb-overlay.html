@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>BGSN Basketball Overlay</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --home: #1a6fc4; --away: #c41a1a;
+    --gold: #ffd960; --chrome-hi: rgba(255,255,255,0.75); --chrome-edge: rgba(200,210,230,0.5);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { width: 1920px; height: 1080px; background: transparent; overflow: hidden; font-family: 'Rajdhani', sans-serif; }
+
+  .board {
+    position: absolute; left: 50%; bottom: 120px; transform: translateX(-50%);
+    display: grid; grid-template-columns: 380px 110px 280px 110px 380px; grid-template-rows: 60px 28px;
+    filter: drop-shadow(0 4px 14px rgba(0,0,0,0.7));
+    transition: opacity 0.4s;
+  }
+  .board.hidden { opacity: 0; }
+  /* chrome line across the top of the whole board */
+  .board::before {
+    content: ''; position: absolute; top: -1px; left: 0; right: 0; height: 2px; z-index: 20;
+    background: linear-gradient(90deg, transparent, var(--chrome-hi) 15%, #fff 35%, var(--gold) 50%, #fff 65%, var(--chrome-hi) 85%, transparent);
+    box-shadow: 0 0 8px rgba(200,168,75,0.5);
+  }
+
+  /* ─── Team name pills ─── */
+  .name-pill {
+    position: relative; overflow: hidden; display: flex; align-items: center;
+    color: #fff; font-weight: 700; font-size: 38px; letter-spacing: 4px; text-transform: uppercase;
+    white-space: nowrap; line-height: 1;
+  }
+  .name-pill::before { /* chrome gloss */
+    content: ''; position: absolute; inset: 0; z-index: 3; pointer-events: none;
+    background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 18%, transparent 45%, rgba(0,0,0,0.3) 100%);
+  }
+  .name-pill::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; z-index: 4; }
+  .away.name-pill { justify-content: flex-end; padding: 0 22px 0 110px; border-radius: 6px 0 0 0;
+    background: linear-gradient(90deg, #0a0a18 0%, #12101e 20%, color-mix(in srgb, var(--away) 45%, #0a0a18) 55%, var(--away) 100%); }
+  .home.name-pill { justify-content: flex-start; padding: 0 110px 0 22px; border-radius: 0 6px 0 0;
+    background: linear-gradient(90deg, var(--home) 0%, color-mix(in srgb, var(--home) 45%, #0a0a18) 45%, #12101e 80%, #0a0a18 100%); }
+  .away.name-pill::after { background: linear-gradient(90deg, transparent, var(--away) 40%); box-shadow: 0 0 10px var(--away); }
+  .home.name-pill::after { background: linear-gradient(90deg, var(--home) 60%, transparent); box-shadow: 0 0 10px var(--home); }
+  .name { position: relative; z-index: 6; text-shadow: 0 2px 3px rgba(0,0,0,0.8); }
+  .rank { color: var(--gold); }
+  .logo { position: absolute; top: 0; height: 100%; width: 100px; z-index: 5; display: flex; align-items: center; justify-content: center; }
+  .logo img { max-height: 100%; max-width: 100%; object-fit: contain; transform: scale(var(--z, 1)); }
+  .logo img[src=''] { display: none; }
+  .away .logo { left: 4px; } .home .logo { right: 4px; }
+
+  /* ─── Score boxes ─── */
+  .score {
+    position: relative; display: flex; align-items: center; justify-content: center;
+    font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 40px; color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.7);
+    border-left: 1px solid var(--chrome-edge); border-right: 1px solid var(--chrome-edge);
+  }
+  .score::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0.25), transparent 45%, rgba(0,0,0,0.35)); }
+  .score span { position: relative; }
+  .away.score { background: var(--away); } .home.score { background: var(--home); }
+
+  /* ─── Center: clock + possession ─── */
+  .center {
+    position: relative; display: flex; align-items: center; justify-content: center; gap: 14px;
+    background: linear-gradient(180deg, #1c1e30, #0a0a14);
+  }
+  .clock { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 42px; color: #fff; min-width: 170px; text-align: center; letter-spacing: 1px; }
+  .clock.low { color: #ff5a5a; }
+  .poss { width: 0; height: 0; border-top: 12px solid transparent; border-bottom: 12px solid transparent; opacity: 0.12; transition: opacity 0.2s; }
+  .poss.left { border-right: 18px solid var(--gold); }
+  .poss.right { border-left: 18px solid var(--gold); }
+  .poss.on { opacity: 1; filter: drop-shadow(0 0 6px var(--gold)); }
+
+  /* ─── Bottom row: fouls / bonus, timeouts, period ─── */
+  .sub {
+    display: flex; align-items: center; gap: 12px; padding: 0 16px;
+    background: linear-gradient(180deg, #14141f, #08080f); border-top: 1px solid rgba(255,255,255,0.12);
+    color: #cfd3dc; font-weight: 700; font-size: 18px; letter-spacing: 2px; text-transform: uppercase;
+  }
+  .away.sub { justify-content: flex-end; border-radius: 0 0 0 6px; }
+  .home.sub { justify-content: flex-start; border-radius: 0 0 6px 0; }
+  .sub b { color: #fff; font-size: 20px; }
+  .bonus { padding: 1px 8px; border-radius: 3px; background: var(--gold); color: #1a1405; font-size: 15px; letter-spacing: 2px; visibility: hidden; }
+  .bonus.on { visibility: visible; }
+  .tos { justify-content: center; gap: 6px; }
+  .to-dot { width: 14px; height: 6px; border-radius: 2px; background: rgba(255,255,255,0.15); }
+  .to-dot.on { background: #fff; box-shadow: 0 0 5px rgba(255,255,255,0.6); }
+  .period { justify-content: center; font-family: 'Orbitron', sans-serif; font-size: 18px; color: var(--gold); letter-spacing: 3px; }
+
+  /* ─── Sponsor ─── */
+  .sponsor {
+    position: absolute; left: 50%; bottom: 76px; transform: translateX(-50%);
+    padding: 4px 28px; border-radius: 0 0 8px 8px;
+    background: linear-gradient(180deg, #16161f, #050508); border: 1px solid var(--chrome-edge); border-top: none;
+    color: #fff; font-weight: 700; font-size: 26px; letter-spacing: 4px; text-transform: uppercase; white-space: nowrap;
+  }
+  .sponsor small { color: var(--gold); font-size: 15px; letter-spacing: 3px; margin-right: 12px; }
+  .sponsor.off, .board.hidden ~ .sponsor { display: none; }
+</style>
+</head>
+<body>
+<div class="board" id="board">
+  <div class="away name-pill"><div class="logo"><img id="awayLogo" src="" alt=""></div><span class="name" id="awayName">AWAY</span></div>
+  <div class="away score"><span id="awayScore">0</span></div>
+  <div class="center">
+    <div class="poss left" id="possAway"></div>
+    <div class="clock" id="clock">8:00</div>
+    <div class="poss right" id="possHome"></div>
+  </div>
+  <div class="home score"><span id="homeScore">0</span></div>
+  <div class="home name-pill"><span class="name" id="homeName">HOME</span><div class="logo"><img id="homeLogo" src="" alt=""></div></div>
+
+  <div class="away sub"><span class="bonus" id="awayBonus">Bonus</span><span>Fouls <b id="awayFouls">0</b></span></div>
+  <div class="sub tos" id="awayTOs"></div>
+  <div class="sub period" id="period">1ST</div>
+  <div class="sub tos" id="homeTOs"></div>
+  <div class="home sub"><span>Fouls <b id="homeFouls">0</b></span><span class="bonus" id="homeBonus">Bonus</span></div>
+</div>
+<div class="sponsor off" id="sponsor"><small>Presented by</small><span id="sponsorName"></span></div>
+
+<script type="module">
+  import { subscribe } from './bb-store.js';
+  import { withDefaults, clockRemaining, formatClock, setRankText } from './bb-common.js';
+
+  const $ = id => document.getElementById(id);
+  let data = withDefaults({});
+
+  function dots(el, left, max) {
+    el.textContent = '';
+    for (let i = 0; i < max; i++) {
+      const d = document.createElement('div');
+      d.className = 'to-dot' + (i < left ? ' on' : '');
+      el.appendChild(d);
+    }
+  }
+
+  function render() {
+    const d = data;
+    document.documentElement.style.setProperty('--home', d.homeColor);
+    document.documentElement.style.setProperty('--away', d.awayColor);
+    $('board').classList.toggle('hidden', d.visible === false);
+    for (const t of ['home', 'away']) {
+      setRankText($(t + 'Name'), d[t + 'Name']);
+      $(t + 'Score').textContent = d[t + 'Score'];
+      $(t + 'Fouls').textContent = d[t + 'Fouls'];
+      const img = $(t + 'Logo');
+      if (img.getAttribute('src') !== (d[t + 'Logo'] || '')) img.setAttribute('src', d[t + 'Logo'] || '');
+      img.style.setProperty('--z', Number(d[t + 'LogoZoom']) || 1);
+      const max = Math.max(0, Math.min(10, Number(d.maxTO) || 0));
+      dots($(t + 'TOs'), Math.min(max, Number(d[t + 'TO']) || 0), max);
+    }
+    // A team is in the bonus when the OTHER team has reached the foul limit
+    const at = Number(d.bonusAt) || 0;
+    $('homeBonus').classList.toggle('on', at > 0 && Number(d.awayFouls) >= at);
+    $('awayBonus').classList.toggle('on', at > 0 && Number(d.homeFouls) >= at);
+    $('possHome').classList.toggle('on', d.poss === 'home');
+    $('possAway').classList.toggle('on', d.poss === 'away');
+    $('period').textContent = d.period;
+    $('sponsorName').textContent = d.sponsor || '';
+    $('sponsor').classList.toggle('off', !d.sponsor);
+    fitNames();
+    tick();
+  }
+
+  // Shrink long names so they never run under the logo; both sides shrink together
+  function fitNames() {
+    const els = [$('homeName'), $('awayName')];
+    let fs = 38;
+    els.forEach(e => e.parentElement.style.fontSize = fs + 'px');
+    const fits = () => els.every(e => e.parentElement.scrollWidth <= e.parentElement.clientWidth);
+    while (!fits() && fs > 18) { fs -= 1; els.forEach(e => e.parentElement.style.fontSize = fs + 'px'); }
+  }
+
+  function tick() {
+    const ms = clockRemaining(data);
+    const el = $('clock');
+    const txt = formatClock(ms);
+    if (el.textContent !== txt) el.textContent = txt;
+    el.classList.toggle('low', ms < 60000);
+  }
+  setInterval(tick, 50);
+
+  subscribe(d => { data = withDefaults(d); render(); }, err => console.warn(err));
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitNames);
+  render();
+</script>
+</body>
+</html>

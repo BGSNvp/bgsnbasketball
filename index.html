@@ -66,6 +66,7 @@
     </div>
     <div class="row" style="justify-content:center">
       <label>Period (min)</label><input type="number" id="periodLen" min="1" max="20" value="8"><button id="resetClock">Reset clock</button>
+      <span style="display:inline-flex;gap:6px;align-items:center;margin-left:10px"><label>Possession</label><button data-poss="away">◀ AWAY</button><button data-poss="">OFF</button><button data-poss="home">HOME ▶</button></span>
     </div>
     <div class="note">Space bar = Start / Stop. Tenths show under 1 minute. Reset clock sets a full period.</div>
   </section>
@@ -73,8 +74,6 @@
   <section>
     <h2>Period</h2>
     <div class="row" id="periods"></div>
-    <h2 style="margin-top:6px">Possession Arrow</h2>
-    <div class="row"><button data-poss="away" class="big">◀ AWAY</button><button data-poss="" class="big">OFF</button><button data-poss="home" class="big">HOME ▶</button></div>
   </section>
 
   <section class="gold wide">

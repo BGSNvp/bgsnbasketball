@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BGSN Basketball Controller</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Barlow+Condensed:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #05070b; --card: #0e1118; --neon: #00ffd0; --gold: #ffd960; --red: #ff4d4d; --text: #ffffff; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Barlow Condensed', sans-serif; font-size: 22px; padding: 14px; }
+  header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; max-width: 760px; margin: 0 auto 14px; }
+  h1 { font-family: 'Orbitron', sans-serif; font-size: 26px; letter-spacing: 3px; }
+  h1 span { color: var(--gold); }
+  #status { font-size: 20px; font-weight: 700; padding: 6px 14px; border-radius: 20px; border: 2px solid var(--neon); color: var(--neon); }
+  #status.bad { border-color: var(--red); color: var(--red); }
+  .wrap { max-width: 760px; margin: 0 auto; display: grid; gap: 16px; }
+  section { background: var(--card); border: 3px solid var(--neon); border-radius: 12px; padding: 14px; box-shadow: 0 0 12px rgba(0,255,208,0.35); }
+  section.gold { border-color: var(--gold); box-shadow: 0 0 12px rgba(255,217,96,0.35); }
+  section.pink { border-color: #ff4dd2; box-shadow: 0 0 12px rgba(255,77,210,0.35); }
+  h2 { font-size: 26px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; }
+  .note { color: #fff; font-size: 19px; line-height: 1.3; margin: 6px 0 10px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 8px 0; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .team { border: 2px solid #3a3f4d; border-radius: 10px; padding: 10px; }
+  .team h3 { font-size: 24px; letter-spacing: 2px; text-transform: uppercase; border-bottom: 4px solid; padding-bottom: 4px; margin-bottom: 8px; }
+  button { font-family: inherit; font-size: 24px; font-weight: 700; color: #fff; background: #222838; border: 2px solid #59607a; border-radius: 10px; padding: 10px 16px; min-width: 64px; cursor: pointer; }
+  button:active { transform: scale(0.96); }
+  button.big { font-size: 30px; padding: 16px 22px; }
+  button.go { background: #0b6b3a; border-color: #2bff95; }
+  button.stop { background: #7a1010; border-color: var(--red); }
+  button.sel { background: var(--gold); color: #1a1405; border-color: #fff; }
+  .num { font-family: 'Orbitron', sans-serif; font-size: 46px; min-width: 90px; text-align: center; }
+  .clock { font-family: 'Orbitron', sans-serif; font-size: 72px; text-align: center; letter-spacing: 2px; }
+  .clock.running { color: #2bff95; }
+  input[type=text], input[type=number] { font-family: inherit; font-size: 24px; font-weight: 700; padding: 8px 10px; border-radius: 8px; border: 2px solid #59607a; background: #000; color: #fff; text-transform: uppercase; min-width: 0; }
+  input[type=number] { width: 90px; }
+  input[type=color] { width: 64px; height: 48px; border: 2px solid #59607a; border-radius: 8px; background: #000; }
+  label { font-weight: 700; }
+  .logo-prev { width: 64px; height: 48px; object-fit: contain; background: #000; border: 2px solid #3a3f4d; border-radius: 8px; }
+  @media (max-width: 560px) { .cols { grid-template-columns: 1fr; } .clock { font-size: 56px; } }
+</style>
+</head>
+<body>
+<header><h1>BGSN <span>BASKETBALL</span></h1><div id="status">Connecting…</div></header>
+<div class="wrap">
+
+  <section>
+    <h2>Game Clock</h2>
+    <div class="clock" id="clock">8:00</div>
+    <div class="row" style="justify-content:center">
+      <button class="big go" id="startStop">START</button>
+    </div>
+    <div class="note">Start / Stop also works with the space bar. Under 1 minute the clock shows tenths.</div>
+    <div class="row" style="justify-content:center">
+      <button data-adj="-10">−10s</button><button data-adj="-1">−1s</button><button data-adj="1">+1s</button><button data-adj="10">+10s</button>
+    </div>
+    <div class="row" style="justify-content:center">
+      <label>Set</label><input type="number" id="setMin" min="0" max="99" value="8"><label>:</label><input type="number" id="setSec" min="0" max="59" value="0"><button id="setClock">SET</button>
+    </div>
+    <div class="row" style="justify-content:center">
+      <label>Period length (min)</label><input type="number" id="periodLen" min="1" max="20" value="8"><button id="resetClock">Reset clock to full period</button>
+    </div>
+  </section>
+
+  <section class="gold">
+    <h2>Score</h2>
+    <div class="cols">
+      <div class="team"><h3 id="awayHdr" style="border-color:#c41a1a">AWAY</h3>
+        <div class="row"><span class="num" id="awayScore">0</span></div>
+        <div class="row"><button data-score="away:1">+1</button><button data-score="away:2">+2</button><button data-score="away:3">+3</button><button data-score="away:-1">−1</button></div>
+      </div>
+      <div class="team"><h3 id="homeHdr" style="border-color:#1a6fc4">HOME</h3>
+        <div class="row"><span class="num" id="homeScore">0</span></div>
+        <div class="row"><button data-score="home:1">+1</button><button data-score="home:2">+2</button><button data-score="home:3">+3</button><button data-score="home:-1">−1</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Period</h2>
+    <div class="row" id="periods"></div>
+  </section>
+
+  <section class="pink">
+    <h2>Team Fouls &amp; Bonus</h2>
+    <div class="cols">
+      <div class="team"><h3 class="awayH">AWAY</h3><div class="row"><button data-foul="away:-1">−</button><span class="num" id="awayFouls">0</span><button data-foul="away:1">+</button></div></div>
+      <div class="team"><h3 class="homeH">HOME</h3><div class="row"><button data-foul="home:-1">−</button><span class="num" id="homeFouls">0</span><button data-foul="home:1">+</button></div></div>
+    </div>
+    <div class="note">BONUS shows on the scoreboard for a team when the other team reaches this many fouls. Set it to 0 to never show BONUS.</div>
+    <div class="row"><label>Bonus at</label><button data-bonus="-1">−</button><span class="num" id="bonusAt">5</span><button data-bonus="1">+</button>
+      <button id="resetFouls">Reset both fouls to 0</button></div>
+  </section>
+
+  <section class="gold">
+    <h2>Timeouts Left</h2>
+    <div class="cols">
+      <div class="team"><h3 class="awayH">AWAY</h3><div class="row"><button data-to="away:-1">−</button><span class="num" id="awayTO">5</span><button data-to="away:1">+</button></div></div>
+      <div class="team"><h3 class="homeH">HOME</h3><div class="row"><button data-to="home:-1">−</button><span class="num" id="homeTO">5</span><button data-to="home:1">+</button></div></div>
+    </div>
+    <div class="row"><label>Timeouts per game</label><button data-maxto="-1">−</button><span class="num" id="maxTO">5</span><button data-maxto="1">+</button>
+      <button id="resetTO">Reset both to full</button></div>
+  </section>
+
+  <section>
+    <h2>Possession Arrow</h2>
+    <div class="row"><button data-poss="away" class="big">◀ AWAY</button><button data-poss="" class="big">OFF</button><button data-poss="home" class="big">HOME ▶</button></div>
+  </section>
+
+  <section class="pink">
+    <h2>Teams</h2>
+    <div class="note">Type a rank with # before or after the name (like "#3 TROJANS" or "TROJANS #3"). The number shows in gold without the #.</div>
+    <div class="cols">
+      <div class="team" data-team="away"><h3 class="awayH">AWAY</h3>
+        <div class="row"><input type="text" id="awayName" maxlength="19" style="flex:1"></div>
+        <div class="row"><label>Color</label><input type="color" id="awayColor"></div>
+        <div class="row"><img class="logo-prev" id="awayLogoPrev" alt="" style="visibility:hidden"><input type="file" id="awayLogoFile" accept="image/*" style="font-size:16px;max-width:100%"></div>
+        <div class="row"><button data-zoom="away:-0.1">Logo −</button><button data-zoom="away:0.1">Logo +</button><button data-clearlogo="away">Remove logo</button></div>
+      </div>
+      <div class="team" data-team="home"><h3 class="homeH">HOME</h3>
+        <div class="row"><input type="text" id="homeName" maxlength="19" style="flex:1"></div>
+        <div class="row"><label>Color</label><input type="color" id="homeColor"></div>
+        <div class="row"><img class="logo-prev" id="homeLogoPrev" alt="" style="visibility:hidden"><input type="file" id="homeLogoFile" accept="image/*" style="font-size:16px;max-width:100%"></div>
+        <div class="row"><button data-zoom="home:-0.1">Logo −</button><button data-zoom="home:0.1">Logo +</button><button data-clearlogo="home">Remove logo</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Sponsor &amp; Display</h2>
+    <div class="row"><label>Sponsor</label><input type="text" id="sponsor" maxlength="30" style="flex:1" placeholder="leave empty to hide"></div>
+    <div class="row"><button id="toggleShow" class="big">HIDE SCOREBOARD</button></div>
+    <div class="note">New Game sets scores, fouls and timeouts back to the start, period to 1ST and the clock to a full period. Team names, colors and logos stay.</div>
+    <div class="row"><button id="newGame" class="stop">NEW GAME</button></div>
+  </section>
+</div>
+
+<script type="module">
+  import { subscribe, save, configured } from './bb-store.js';
+  import { withDefaults, clockRemaining, formatClock } from './bb-common.js';
+
+  const $ = id => document.getElementById(id);
+  const PERIODS = ['1ST', '2ND', '3RD', '4TH', 'OT', '2OT', 'HALF', 'FINAL'];
+  let d = withDefaults({});
+
+  const status = (ok, msg) => { $('status').textContent = msg; $('status').classList.toggle('bad', !ok); };
+  function put(partial) {
+    Object.assign(d, partial);
+    render();
+    save(partial).then(() => status(true, 'Connected'), e => status(false, configured ? 'Save failed' : 'Firebase not set up'));
+  }
+  const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
+
+  // ─── Clock ───
+  function clockSet(ms, running = d.clockRunning) {
+    put({ clockMs: Math.max(0, Math.round(ms)), clockRunning: running && ms > 0, clockStartAt: Date.now() });
+  }
+  function startStop() {
+    const ms = clockRemaining(d);
+    if (d.clockRunning) put({ clockRunning: false, clockMs: ms });
+    else if (ms > 0) put({ clockRunning: true, clockMs: ms, clockStartAt: Date.now() });
+  }
+  $('startStop').onclick = startStop;
+  document.addEventListener('keydown', e => {
+    if (e.code === 'Space' && !/INPUT|TEXTAREA|SELECT|BUTTON/.test(document.activeElement.tagName)) { e.preventDefault(); startStop(); }
+  });
+  document.querySelectorAll('[data-adj]').forEach(b => b.onclick = () => clockSet(clockRemaining(d) + Number(b.dataset.adj) * 1000));
+  $('setClock').onclick = () => clockSet((clamp(Number($('setMin').value) || 0, 0, 99) * 60 + clamp(Number($('setSec').value) || 0, 0, 59)) * 1000, false);
+  $('periodLen').onchange = () => put({ periodLen: clamp(Number($('periodLen').value) || 8, 1, 20) * 60 });
+  $('resetClock').onclick = () => clockSet(d.periodLen * 1000, false);
+  setInterval(() => {
+    const ms = clockRemaining(d);
+    $('clock').textContent = formatClock(ms);
+    $('clock').classList.toggle('running', !!d.clockRunning);
+    if (d.clockRunning && ms <= 0) put({ clockRunning: false, clockMs: 0 });
+  }, 50);
+
+  // ─── Score / fouls / timeouts ───
+  const bump = (attr, key, lo, hi) => document.querySelectorAll('[' + attr + ']').forEach(b => b.onclick = () => {
+    const [t, n] = b.getAttribute(attr).split(':');
+    const f = t + key;
+    put({ [f]: clamp((Number(d[f]) || 0) + Number(n), lo, hi()) });
+  });
+  bump('data-score', 'Score', 0, () => 999);
+  bump('data-foul', 'Fouls', 0, () => 99);
+  bump('data-to', 'TO', 0, () => d.maxTO);
+  document.querySelectorAll('[data-bonus]').forEach(b => b.onclick = () => put({ bonusAt: clamp(d.bonusAt + Number(b.dataset.bonus), 0, 20) }));
+  $('resetFouls').onclick = () => put({ homeFouls: 0, awayFouls: 0 });
+  document.querySelectorAll('[data-maxto]').forEach(b => b.onclick = () => {
+    const m = clamp(d.maxTO + Number(b.dataset.maxto), 0, 10);
+    put({ maxTO: m, homeTO: Math.min(d.homeTO, m), awayTO: Math.min(d.awayTO, m) });
+  });
+  $('resetTO').onclick = () => put({ homeTO: d.maxTO, awayTO: d.maxTO });
+
+  // ─── Period / possession ───
+  PERIODS.forEach(p => {
+    const b = document.createElement('button'); b.textContent = p; b.dataset.period = p;
+    b.onclick = () => put({ period: p }); $('periods').appendChild(b);
+  });
+  document.querySelectorAll('[data-poss]').forEach(b => b.onclick = () => put({ poss: b.dataset.poss }));
+
+  // ─── Teams ───
+  let typing;
+  for (const t of ['home', 'away']) {
+    $(t + 'Name').oninput = () => { clearTimeout(typing); typing = setTimeout(() => put({ [t + 'Name']: $(t + 'Name').value.toUpperCase().trim() || t.toUpperCase() }), 600); };
+    $(t + 'Color').onchange = () => put({ [t + 'Color']: $(t + 'Color').value });
+    $(t + 'LogoFile').onchange = e => {
+      const file = e.target.files[0]; if (!file) return;
+      const img = new Image();
+      img.onload = () => {
+        // Shrink to 240px tall max so the saved logo stays small
+        const s = Math.min(1, 240 / img.height, 240 / img.width);
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        put({ [t + 'Logo']: c.toDataURL('image/png') });
+        URL.revokeObjectURL(img.src); e.target.value = '';
+      };
+      img.src = URL.createObjectURL(file);
+    };
+  }
+  document.querySelectorAll('[data-zoom]').forEach(b => b.onclick = () => {
+    const [t, n] = b.dataset.zoom.split(':'); const f = t + 'LogoZoom';
+    put({ [f]: Math.round(clamp((Number(d[f]) || 1) + Number(n), 0.3, 3) * 10) / 10 });
+  });
+  document.querySelectorAll('[data-clearlogo]').forEach(b => b.onclick = () => put({ [b.dataset.clearlogo + 'Logo']: '' }));
+
+  // ─── Sponsor / display ───
+  $('sponsor').oninput = () => { clearTimeout(typing); typing = setTimeout(() => put({ sponsor: $('sponsor').value.toUpperCase().trim() }), 600); };
+  $('toggleShow').onclick = () => put({ visible: d.visible === false });
+  $('newGame').onclick = () => {
+    if (!confirm('Start a new game? Scores, fouls, timeouts, period and clock reset.')) return;
+    put({ homeScore: 0, awayScore: 0, homeFouls: 0, awayFouls: 0, homeTO: d.maxTO, awayTO: d.maxTO,
+          period: '1ST', poss: '', clockRunning: false, clockMs: d.periodLen * 1000, clockStartAt: 0 });
+  };
+
+  // ─── Show current state ───
+  const setVal = (id, v) => { const el = $(id); if (document.activeElement !== el && el.value !== String(v)) el.value = v; };
+  function render() {
+    for (const t of ['home', 'away']) {
+      for (const k of ['Score', 'Fouls', 'TO']) $(t + k).textContent = d[t + k];
+      document.querySelectorAll('.' + t + 'H, #' + t + 'Hdr').forEach(h => { h.textContent = d[t + 'Name']; h.style.borderColor = d[t + 'Color']; });
+      setVal(t + 'Name', d[t + 'Name']); setVal(t + 'Color', d[t + 'Color']);
+      $(t + 'LogoPrev').src = d[t + 'Logo'] || '';
+      $(t + 'LogoPrev').style.visibility = d[t + 'Logo'] ? 'visible' : 'hidden';
+    }
+    $('bonusAt').textContent = d.bonusAt; $('maxTO').textContent = d.maxTO;
+    setVal('periodLen', Math.round(d.periodLen / 60)); setVal('sponsor', d.sponsor);
+    document.querySelectorAll('[data-period]').forEach(b => b.classList.toggle('sel', b.dataset.period === d.period));
+    document.querySelectorAll('[data-poss]').forEach(b => b.classList.toggle('sel', b.dataset.poss === d.poss));
+    const sb = $('startStop'); sb.textContent = d.clockRunning ? 'STOP' : 'START'; sb.className = 'big ' + (d.clockRunning ? 'stop' : 'go');
+    $('toggleShow').textContent = d.visible === false ? 'SHOW SCOREBOARD' : 'HIDE SCOREBOARD';
+  }
+
+  if (!configured) status(false, 'Firebase not set up');
+  subscribe(data => { d = withDefaults(data); render(); status(true, 'Connected'); }, () => status(false, configured ? 'Offline' : 'Firebase not set up'));
+  render();
+</script>
+</body>
+</html>

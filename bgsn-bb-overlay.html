@@ -33,9 +33,10 @@
   .poss { width: 0; height: 0; margin-left: 10px; flex: none; border-top: 9px solid transparent; border-bottom: 9px solid transparent;
     border-right: 12px solid var(--gold); visibility: hidden; }
   .poss.on { visibility: visible; }
+  .possOff .poss { display: none; }
 
-  .info { width: 150px; background: #141414; display: flex; flex-direction: column; justify-content: center; align-items: flex-end;
-    gap: 7px; padding-right: 10px; font: 700 15px Arial, sans-serif; color: #c8c8c8; letter-spacing: 1px; white-space: nowrap; }
+  .info { background: #141414; display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
+    gap: 7px; padding: 0 10px 0 4px; font: 700 15px Arial, sans-serif; color: #c8c8c8; letter-spacing: 1px; white-space: nowrap; }
   .info b { color: #fff; }
   .tos { display: flex; gap: 4px; }
   .to-dot { width: 15px; height: 5px; background: #444; }
@@ -161,6 +162,7 @@
     $('awayBonus').classList.toggle('on', at > 0 && Number(d.homeFouls) >= at);
     $('possHome').classList.toggle('on', d.poss === 'home');
     $('possAway').classList.toggle('on', d.poss === 'away');
+    $('board').classList.toggle('possOff', !d.poss);
     $('period').textContent = d.period;
     setSponsors(d.sponsor);
     renderTickers(d);
@@ -170,7 +172,7 @@
 
   // Both team boxes are sized to the longer name so the fouls/BONUS area sits snug after it.
   // Names too long for the widest box shrink together so both rows match.
-  const BOX_MIN = 180, BOX_MAX = 324, NAME_LEFT = 76, NAME_PAD = 14;
+  const BOX_MIN = 180, BOX_MAX = 324, NAME_LEFT = 76, NAME_PAD = 8;
   function fitNames() {
     const boxes = [$('homeName').parentElement, $('awayName').parentElement];
     const need = () => Math.max(...boxes.map(b =>
@@ -181,6 +183,11 @@
     while (need() > BOX_MAX && fs > 16) { fs -= 1; apply(); }
     const w = Math.max(BOX_MIN, Math.min(BOX_MAX, Math.ceil(need())));
     document.querySelectorAll('.teambox').forEach(tb => tb.style.width = w + 'px');
+    // Fouls/BONUS area hugs the name: both rows get the width of the wider content
+    const infos = [...document.querySelectorAll('.info')];
+    infos.forEach(i => i.style.width = '');
+    const iw = Math.max(...infos.map(i => i.offsetWidth));
+    infos.forEach(i => i.style.width = iw + 'px');
   }
 
   // ─── Tickers (ported from the football overlay) ───

@@ -56,17 +56,21 @@
   body.fsOn { overflow: hidden; }
   section.fs { position: fixed; inset: 0; z-index: 50; border-radius: 0; overflow: auto; padding: 12px 18px; }
   .fs .bigOnly { display: inline-block; } .fs .smallOnly { display: none; }
-  .fs h2 { font-size: 28px; margin-bottom: 8px; }
-  .fs .cols { gap: 16px; }
-  .fs .team { padding: 8px 12px; }
-  .fs .team h3 { font-size: 34px; padding-bottom: 4px; margin-bottom: 6px; }
-  .fs .stat { padding: 8px 10px; margin: 10px 0; border-left-width: 10px; gap: 10px; }
-  .fs .stat .lbl { min-width: 110px; font-size: 28px; } .fs .grp > label { font-size: 26px; }
-  .fs button { font-size: 32px; padding: 8px 14px; min-width: 64px; }
-  .fs button.back { font-size: 28px; background: #7a1010; border-color: var(--red); }
-  .fs .num { font-size: 60px; min-width: 90px; }
-  .fs .grp { gap: 10px; padding: 6px 10px; margin-top: 10px; }
-  .fs .note { font-size: 20px; margin-top: 10px; }
+  .fs h2 { font-size: clamp(18px, 2vw, 28px); margin-bottom: 0.6vw; }
+  .fs .cols { gap: 1.2vw; }
+  .fs .row { flex-wrap: nowrap; white-space: nowrap; }
+  .fs .team { padding: 0.6vw 0.9vw; }
+  .fs .team h3 { font-size: clamp(20px, 2.6vw, 38px); padding-bottom: 0.3vw; margin-bottom: 0.4vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fs .stat { padding: 0.5vw 0.8vw; margin: 0.8vw 0; border-left-width: 0.7vw; gap: 0.8vw; }
+  .fs .stat .lbl { min-width: 8vw; font-size: clamp(16px, 2.1vw, 30px); }
+  .fs button { font-size: clamp(16px, 2.3vw, 36px); padding: 0.5vw 1vw; min-width: 4.6vw; }
+  .fs button.back { font-size: clamp(16px, 2vw, 28px); background: #7a1010; border-color: var(--red); }
+  .fs .num { font-size: clamp(28px, 4.4vw, 66px); min-width: 6.4vw; }
+  .fs .setrow { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2vw; }
+  .fs .grp { gap: 0.6vw; padding: 0.4vw 0.7vw; margin-top: 0.6vw; flex-wrap: nowrap; white-space: nowrap; }
+  .fs .grp > label { font-size: clamp(14px, 1.8vw, 28px); }
+  .fs .grp button { font-size: clamp(14px, 1.9vw, 30px); }
+  .fs .note { font-size: clamp(14px, 1.4vw, 22px); margin-top: 0.8vw; }
   @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } }
   @media (max-width: 560px) { .cols { grid-template-columns: 1fr; } .clock { font-size: 36px; } }
 </style>
@@ -107,7 +111,7 @@
         <div class="row stat s-foul"><label class="lbl">Fouls</label><button data-foul="home:-1">−</button><span class="num" id="homeFouls">0</span><button data-foul="home:1">+</button></div>
       </div>
     </div>
-    <div class="row"><span class="grp s-to"><label>Timeouts per game</label><button data-maxto="-1">−</button><span class="num" id="maxTO">5</span><button data-maxto="1">+</button><button id="resetTO">Reset both TOs</button></span>
+    <div class="row setrow"><span class="grp s-to"><label>Timeouts per game</label><button data-maxto="-1">−</button><span class="num" id="maxTO">5</span><button data-maxto="1">+</button><button id="resetTO">Reset both TOs</button></span>
       <span class="grp s-foul"><label>Bonus at</label><button data-bonus="-1">−</button><span class="num" id="bonusAt">5</span><button data-bonus="1">+</button><button id="resetFouls">Reset both fouls</button></span></div>
     <div class="note">Fouls go back to 0 when you press a new quarter (1–4). Overtime keeps the 4th-quarter fouls. BONUS shows for a team when the other team reaches the Bonus at number. 0 = never show BONUS.</div>
   </section>

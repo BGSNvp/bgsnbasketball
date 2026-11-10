@@ -50,6 +50,23 @@
   .team[data-team] { border-width: 3px; }
   .pending { color: var(--gold); font-weight: 700; visibility: hidden; }
   .logo-prev { width: 46px; height: 30px; object-fit: contain; background: #000; border: 2px solid #3a3f4d; border-radius: 8px; }
+  .bigOnly { display: none; }
+  h2.bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  button.magic { background: #3b1a5c; border-color: #c77dff; font-size: 15px; padding: 2px 10px; letter-spacing: 1px; }
+  body.fsOn { overflow: hidden; }
+  section.fs { position: fixed; inset: 0; z-index: 50; border-radius: 0; overflow: auto; padding: 12px 18px; }
+  .fs .bigOnly { display: inline-block; } .fs .smallOnly { display: none; }
+  .fs h2 { font-size: 28px; margin-bottom: 8px; }
+  .fs .cols { gap: 16px; }
+  .fs .team { padding: 8px 12px; }
+  .fs .team h3 { font-size: 34px; padding-bottom: 4px; margin-bottom: 6px; }
+  .fs .stat { padding: 8px 10px; margin: 10px 0; border-left-width: 10px; gap: 10px; }
+  .fs .stat .lbl { min-width: 110px; font-size: 28px; } .fs .grp > label { font-size: 26px; }
+  .fs button { font-size: 32px; padding: 8px 14px; min-width: 64px; }
+  .fs button.back { font-size: 28px; background: #7a1010; border-color: var(--red); }
+  .fs .num { font-size: 60px; min-width: 90px; }
+  .fs .grp { gap: 10px; padding: 6px 10px; margin-top: 10px; }
+  .fs .note { font-size: 20px; margin-top: 10px; }
   @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } }
   @media (max-width: 560px) { .cols { grid-template-columns: 1fr; } .clock { font-size: 36px; } }
 </style>
@@ -76,8 +93,8 @@
     <div class="row" id="periods"></div>
   </section>
 
-  <section class="gold wide">
-    <h2>Score · Timeouts · Fouls</h2>
+  <section class="gold wide" id="stats">
+    <h2 class="bar">Score · Timeouts · Fouls<button class="magic smallOnly" id="bigOn">BIG VIEW</button><button class="back bigOnly" id="bigOff">✕ BACK</button></h2>
     <div class="cols">
       <div class="team" data-team="away"><h3 id="awayHdr" style="border-color:#c41a1a">AWAY</h3>
         <div class="row stat s-score"><label class="lbl">Score</label><span class="num" id="awayScore">0</span><button data-score="away:1">+1</button><button data-score="away:2">+2</button><button data-score="away:3">+3</button><button data-score="away:-1">−1</button></div>
@@ -185,7 +202,11 @@
     else if (ms > 0) put({ clockRunning: true, clockMs: ms, clockStartAt: Date.now() });
   }
   $('startStop').onclick = startStop;
+  function bigView(on) { $('stats').classList.toggle('fs', on); document.body.classList.toggle('fsOn', on); }
+  $('bigOn').onclick = () => bigView(true);
+  $('bigOff').onclick = () => bigView(false);
   document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') bigView(false);
     if (e.code === 'Space' && !/INPUT|TEXTAREA|SELECT|BUTTON/.test(document.activeElement.tagName)) { e.preventDefault(); startStop(); }
   });
   document.querySelectorAll('[data-adj]').forEach(b => b.onclick = () => clockSet(clockRemaining(d) + Number(b.dataset.adj) * 1000));

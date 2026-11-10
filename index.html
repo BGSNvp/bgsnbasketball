@@ -38,6 +38,10 @@
   input[type=number] { width: 60px; }
   input[type=color] { width: 46px; height: 30px; border: 2px solid #59607a; border-radius: 8px; background: #000; }
   label { font-weight: 700; }
+  textarea { width: 100%; font-family: inherit; font-size: 17px; font-weight: 700; padding: 4px 6px; border-radius: 6px; border: 2px solid #59607a; background: #000; color: #fff; resize: vertical; }
+  .val { font-family: 'Orbitron', sans-serif; font-size: 18px; min-width: 64px; text-align: center; }
+  .lbl { min-width: 48px; }
+  .pending { color: var(--gold); font-weight: 700; visibility: hidden; }
   .logo-prev { width: 46px; height: 30px; object-fit: contain; background: #000; border: 2px solid #3a3f4d; border-radius: 8px; }
   @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } }
   @media (max-width: 560px) { .cols { grid-template-columns: 1fr; } .clock { font-size: 36px; } }
@@ -131,9 +135,35 @@
     </div>
   </section>
 
+  <section class="gold wide">
+    <h2>Tickers</h2>
+    <div class="note">Separate messages with | (like "Go Trojans | Next game Friday"). Type, then press Update. Speed 0 shows STOP and parks the text; then use Slide to move it left or right.</div>
+    <div class="cols">
+      <div class="team"><h3 style="border-color:#00ffd0">Upper ticker (white text, BGSN label)</h3>
+        <div class="row"><button id="tk1On" data-tkon="1" style="flex:1">ON</button></div>
+        <div class="note">Turning it off hides the upper bar.</div>
+        <textarea id="tk1Text" rows="2"></textarea>
+        <div class="row"><button class="go" data-tkpush="1">UPDATE TICKER 1</button><span class="pending" id="tk1Pending">Not sent yet — press Update</span></div>
+        <div class="row"><label class="lbl">Speed</label><button data-tkspeed="1:-2">−</button><span class="val" id="tk1Speed">35</span><button data-tkspeed="1:2">+</button></div>
+        <div class="row"><label class="lbl">Size</label><button data-tksize="1:-2">−</button><span class="val" id="tk1Size">38</span><button data-tksize="1:2">+</button></div>
+        <div class="row"><label class="lbl">Slide</label><button data-tkshift="1:-10">←</button><span class="val" id="tk1Shift">0</span><button data-tkshift="1:10">→</button><button data-tkshiftreset="1">Reset</button></div>
+      </div>
+      <div class="team"><h3 style="border-color:#ffd960">Lower ticker (gold text, date &amp; time)</h3>
+        <div class="row"><button id="tk2On" data-tkon="2" style="flex:1">ON</button></div>
+        <div class="note">Turning it off drops the upper ticker to the bottom.</div>
+        <textarea id="tk2Text" rows="2"></textarea>
+        <div class="row"><button class="go" data-tkpush="2">UPDATE TICKER 2</button><span class="pending" id="tk2Pending">Not sent yet — press Update</span></div>
+        <div class="row"><label class="lbl">Speed</label><button data-tkspeed="2:-2">−</button><span class="val" id="tk2Speed">35</span><button data-tkspeed="2:2">+</button></div>
+        <div class="row"><label class="lbl">Size</label><button data-tksize="2:-2">−</button><span class="val" id="tk2Size">38</span><button data-tksize="2:2">+</button></div>
+        <div class="row"><label class="lbl">Slide</label><button data-tkshift="2:-10">←</button><span class="val" id="tk2Shift">0</span><button data-tkshift="2:10">→</button><button data-tkshiftreset="2">Reset</button></div>
+      </div>
+    </div>
+  </section>
+
   <section class="wide">
     <h2>Sponsor &amp; Display</h2>
-    <div class="row"><label>Sponsor</label><input type="text" id="sponsor" maxlength="30" style="flex:1" placeholder="leave empty to hide"></div>
+    <div class="row"><label>Sponsor</label><input type="text" id="sponsor" maxlength="200" style="flex:1" placeholder="leave empty to hide"></div>
+    <div class="note">More than one sponsor? Separate them with | (like "Smith Dental | Joe's Pizza"). They take turns every 15 seconds.</div>
     <div class="row"><button id="toggleShow" class="big">HIDE SCOREBOARD</button></div>
     <div class="note">New Game sets scores, fouls and timeouts back to the start, period to 1ST and the clock to a full period. Team names, colors and logos stay.</div>
     <div class="row"><button id="newGame" class="stop">NEW GAME</button></div>
@@ -245,6 +275,36 @@
   document.querySelectorAll('[data-namereset]').forEach(b => b.onclick = () => put({ [b.dataset.namereset + 'NameX']: 0, [b.dataset.namereset + 'NameY']: 0 }));
   document.querySelectorAll('[data-clearlogo]').forEach(b => b.onclick = () => put({ [b.dataset.clearlogo + 'Logo']: '' }));
 
+  // ─── Tickers ───
+  const tkDirty = { 1: false, 2: false };
+  const tkPending = n => $('tk' + n + 'Pending').style.visibility = tkDirty[n] ? 'visible' : 'hidden';
+  [1, 2].forEach(n => { $('tk' + n + 'Text').oninput = () => { tkDirty[n] = true; tkPending(n); }; });
+  document.querySelectorAll('[data-tkpush]').forEach(b => b.onclick = () => {
+    const n = b.dataset.tkpush; tkDirty[n] = false; tkPending(n);
+    put({ ['ticker' + n]: $('tk' + n + 'Text').value });
+  });
+  document.querySelectorAll('[data-tkon]').forEach(b => b.onclick = () => { const f = 'ticker' + b.dataset.tkon + 'On'; put({ [f]: d[f] === false }); });
+  const tkBump = (attr, key, lo, hi) => document.querySelectorAll('[' + attr + ']').forEach(b => b.onclick = () => {
+    const [n, step] = b.getAttribute(attr).split(':'); const f = key + n;
+    put({ [f]: clamp((Number(d[f]) || 0) + Number(step), lo, hi) });
+  });
+  tkBump('data-tkspeed', 'tickerSpeed', 0, 120);
+  tkBump('data-tksize', 'tickerSize', 20, 90);
+  tkBump('data-tkshift', 'tickerShift', -2000, 2000);
+  document.querySelectorAll('[data-tkshiftreset]').forEach(b => b.onclick = () => put({ ['tickerShift' + b.dataset.tkshiftreset]: 0 }));
+  function renderTickers() {
+    [1, 2].forEach(n => {
+      const on = d['ticker' + n + 'On'] !== false, btn = $('tk' + n + 'On');
+      btn.textContent = on ? 'ON — press to hide' : 'OFF — press to show'; btn.className = on ? 'go' : 'stop';
+      if (!tkDirty[n]) setVal('tk' + n + 'Text', d['ticker' + n] || '');
+      const sp = Number(d['tickerSpeed' + n]) || 0, sh = Number(d['tickerShift' + n]) || 0;
+      $('tk' + n + 'Speed').textContent = sp > 0 ? sp : 'STOP';
+      $('tk' + n + 'Size').textContent = d['tickerSize' + n];
+      $('tk' + n + 'Shift').textContent = (sh > 0 ? '+' : '') + sh;
+      tkPending(n);
+    });
+  }
+
   // ─── Sponsor / display ───
   $('sponsor').oninput = () => { clearTimeout(typing); typing = setTimeout(() => put({ sponsor: $('sponsor').value.toUpperCase().trim() }), 600); };
   $('toggleShow').onclick = () => put({ visible: d.visible === false });
@@ -270,6 +330,7 @@
     document.querySelectorAll('[data-poss]').forEach(b => b.classList.toggle('sel', b.dataset.poss === d.poss));
     const sb = $('startStop'); sb.textContent = d.clockRunning ? 'STOP' : 'START'; sb.className = 'big ' + (d.clockRunning ? 'stop' : 'go');
     $('toggleShow').textContent = d.visible === false ? 'SHOW SCOREBOARD' : 'HIDE SCOREBOARD';
+    renderTickers();
   }
 
   if (!configured) status(false, 'Firebase not set up');

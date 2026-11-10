@@ -2,6 +2,7 @@
 export const DEFAULTS = {
   homeName: 'HOME', awayName: 'AWAY', homeColor: '#1a6fc4', awayColor: '#c41a1a',
   homeLogo: '', awayLogo: '', homeLogoZoom: 1, awayLogoZoom: 1,
+  homeLogoX: 0, awayLogoX: 0, homeLogoY: 0, awayLogoY: 0, homeLogoFlip: false, awayLogoFlip: false,
   homeScore: 0, awayScore: 0, homeFouls: 0, awayFouls: 0, bonusAt: 5,
   homeTO: 5, awayTO: 5, maxTO: 5, period: '1ST', periodLen: 480,
   clockMs: 480000, clockRunning: false, clockStartAt: 0, poss: '', sponsor: '', visible: true

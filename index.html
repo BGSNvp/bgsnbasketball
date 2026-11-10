@@ -110,6 +110,7 @@
 
   <section class="pink">
     <h2>Teams</h2>
+    <div class="note">Logo buttons: ◀ ▶ ▲ ▼ move the logo inside its box, Flip mirrors it, Reset puts size and position back to normal.</div>
     <div class="note">Type a rank with # before or after the name (like "#3 TROJANS" or "TROJANS #3"). The number shows in gold without the #.</div>
     <div class="cols">
       <div class="team" data-team="away"><h3 class="awayH">AWAY</h3>
@@ -117,12 +118,14 @@
         <div class="row"><label>Color</label><input type="color" id="awayColor"></div>
         <div class="row"><img class="logo-prev" id="awayLogoPrev" alt="" style="visibility:hidden"><input type="file" id="awayLogoFile" accept="image/*" style="font-size:16px;max-width:100%"></div>
         <div class="row"><button data-zoom="away:-0.1">Logo −</button><button data-zoom="away:0.1">Logo +</button><button data-clearlogo="away">Remove logo</button></div>
+        <div class="row"><button data-logomove="away:X:-2">◀</button><button data-logomove="away:X:2">▶</button><button data-logomove="away:Y:-2">▲</button><button data-logomove="away:Y:2">▼</button><button data-logoflip="away">Flip</button><button data-logoreset="away">Reset</button></div>
       </div>
       <div class="team" data-team="home"><h3 class="homeH">HOME</h3>
         <div class="row"><input type="text" id="homeName" maxlength="19" style="flex:1"></div>
         <div class="row"><label>Color</label><input type="color" id="homeColor"></div>
         <div class="row"><img class="logo-prev" id="homeLogoPrev" alt="" style="visibility:hidden"><input type="file" id="homeLogoFile" accept="image/*" style="font-size:16px;max-width:100%"></div>
         <div class="row"><button data-zoom="home:-0.1">Logo −</button><button data-zoom="home:0.1">Logo +</button><button data-clearlogo="home">Remove logo</button></div>
+        <div class="row"><button data-logomove="home:X:-2">◀</button><button data-logomove="home:X:2">▶</button><button data-logomove="home:Y:-2">▲</button><button data-logomove="home:Y:2">▼</button><button data-logoflip="home">Flip</button><button data-logoreset="home">Reset</button></div>
       </div>
     </div>
   </section>
@@ -223,6 +226,14 @@
   document.querySelectorAll('[data-zoom]').forEach(b => b.onclick = () => {
     const [t, n] = b.dataset.zoom.split(':'); const f = t + 'LogoZoom';
     put({ [f]: Math.round(clamp((Number(d[f]) || 1) + Number(n), 0.3, 3) * 10) / 10 });
+  });
+  document.querySelectorAll('[data-logomove]').forEach(b => b.onclick = () => {
+    const [t, axis, n] = b.dataset.logomove.split(':'); const f = t + 'Logo' + axis;
+    put({ [f]: clamp((Number(d[f]) || 0) + Number(n), -60, 60) });
+  });
+  document.querySelectorAll('[data-logoflip]').forEach(b => b.onclick = () => put({ [b.dataset.logoflip + 'LogoFlip']: !d[b.dataset.logoflip + 'LogoFlip'] }));
+  document.querySelectorAll('[data-logoreset]').forEach(b => b.onclick = () => {
+    const t = b.dataset.logoreset; put({ [t + 'LogoX']: 0, [t + 'LogoY']: 0, [t + 'LogoZoom']: 1, [t + 'LogoFlip']: false });
   });
   document.querySelectorAll('[data-clearlogo]').forEach(b => b.onclick = () => put({ [b.dataset.clearlogo + 'Logo']: '' }));
 

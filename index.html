@@ -41,6 +41,13 @@
   textarea { width: 100%; font-family: inherit; font-size: 17px; font-weight: 700; padding: 4px 6px; border-radius: 6px; border: 2px solid #59607a; background: #000; color: #fff; resize: vertical; }
   .val { font-family: 'Orbitron', sans-serif; font-size: 18px; min-width: 64px; text-align: center; }
   .lbl { min-width: 48px; }
+  .stat { border-left: 5px solid; border-radius: 4px; padding: 1px 6px; margin: 3px 0; }
+  .stat .lbl, .grp > label { min-width: 70px; }
+  .s-score { border-color: var(--gold); background: rgba(255,217,96,0.10); } .s-score label { color: var(--gold); }
+  .s-to { border-color: var(--neon); background: rgba(0,255,208,0.10); } .s-to label { color: var(--neon); }
+  .s-foul { border-color: #ff4dd2; background: rgba(255,77,210,0.10); } .s-foul label { color: #ff7de0; }
+  .grp { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; border-width: 2px; border-style: solid; border-radius: 6px; padding: 2px 6px; }
+  .team[data-team] { border-width: 3px; }
   .pending { color: var(--gold); font-weight: 700; visibility: hidden; }
   .logo-prev { width: 46px; height: 30px; object-fit: contain; background: #000; border: 2px solid #3a3f4d; border-radius: 8px; }
   @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } }
@@ -73,20 +80,20 @@
   <section class="gold wide">
     <h2>Score · Timeouts · Fouls</h2>
     <div class="cols">
-      <div class="team"><h3 id="awayHdr" style="border-color:#c41a1a">AWAY</h3>
-        <div class="row"><label class="lbl">Score</label><span class="num" id="awayScore">0</span><button data-score="away:1">+1</button><button data-score="away:2">+2</button><button data-score="away:3">+3</button><button data-score="away:-1">−1</button></div>
-        <div class="row"><label class="lbl">TO left</label><button data-to="away:-1">−</button><span class="num" id="awayTO">5</span><button data-to="away:1">+</button>
-          <label class="lbl" style="margin-left:10px">Fouls</label><button data-foul="away:-1">−</button><span class="num" id="awayFouls">0</span><button data-foul="away:1">+</button></div>
+      <div class="team" data-team="away"><h3 id="awayHdr" style="border-color:#c41a1a">AWAY</h3>
+        <div class="row stat s-score"><label class="lbl">Score</label><span class="num" id="awayScore">0</span><button data-score="away:1">+1</button><button data-score="away:2">+2</button><button data-score="away:3">+3</button><button data-score="away:-1">−1</button></div>
+        <div class="row stat s-to"><label class="lbl">Timeouts</label><button data-to="away:-1">−</button><span class="num" id="awayTO">5</span><button data-to="away:1">+</button></div>
+        <div class="row stat s-foul"><label class="lbl">Fouls</label><button data-foul="away:-1">−</button><span class="num" id="awayFouls">0</span><button data-foul="away:1">+</button></div>
       </div>
-      <div class="team"><h3 id="homeHdr" style="border-color:#1a6fc4">HOME</h3>
-        <div class="row"><label class="lbl">Score</label><span class="num" id="homeScore">0</span><button data-score="home:1">+1</button><button data-score="home:2">+2</button><button data-score="home:3">+3</button><button data-score="home:-1">−1</button></div>
-        <div class="row"><label class="lbl">TO left</label><button data-to="home:-1">−</button><span class="num" id="homeTO">5</span><button data-to="home:1">+</button>
-          <label class="lbl" style="margin-left:10px">Fouls</label><button data-foul="home:-1">−</button><span class="num" id="homeFouls">0</span><button data-foul="home:1">+</button></div>
+      <div class="team" data-team="home"><h3 id="homeHdr" style="border-color:#1a6fc4">HOME</h3>
+        <div class="row stat s-score"><label class="lbl">Score</label><span class="num" id="homeScore">0</span><button data-score="home:1">+1</button><button data-score="home:2">+2</button><button data-score="home:3">+3</button><button data-score="home:-1">−1</button></div>
+        <div class="row stat s-to"><label class="lbl">Timeouts</label><button data-to="home:-1">−</button><span class="num" id="homeTO">5</span><button data-to="home:1">+</button></div>
+        <div class="row stat s-foul"><label class="lbl">Fouls</label><button data-foul="home:-1">−</button><span class="num" id="homeFouls">0</span><button data-foul="home:1">+</button></div>
       </div>
     </div>
-    <div class="row"><label>Timeouts per game</label><button data-maxto="-1">−</button><span class="num" id="maxTO">5</span><button data-maxto="1">+</button><button id="resetTO">Reset both TOs</button>
-      <label style="margin-left:14px">Bonus at</label><button data-bonus="-1">−</button><span class="num" id="bonusAt">5</span><button data-bonus="1">+</button><button id="resetFouls">Reset both fouls</button></div>
-    <div class="note">BONUS shows for a team when the other team reaches the Bonus at number of fouls. 0 = never show BONUS.</div>
+    <div class="row"><span class="grp s-to"><label>Timeouts per game</label><button data-maxto="-1">−</button><span class="num" id="maxTO">5</span><button data-maxto="1">+</button><button id="resetTO">Reset both TOs</button></span>
+      <span class="grp s-foul"><label>Bonus at</label><button data-bonus="-1">−</button><span class="num" id="bonusAt">5</span><button data-bonus="1">+</button><button id="resetFouls">Reset both fouls</button></span></div>
+    <div class="note">Fouls go back to 0 when you press a new quarter (1–4). Overtime keeps the 4th-quarter fouls. BONUS shows for a team when the other team reaches the Bonus at number. 0 = never show BONUS.</div>
   </section>
 
   <section class="pink wide">
@@ -211,9 +218,11 @@
   $('resetTO').onclick = () => put({ homeTO: d.maxTO, awayTO: d.maxTO });
 
   // ─── Period / possession ───
+  const QUARTERS = ['1ST', '2ND', '3RD', '4TH'];
   PERIODS.forEach(p => {
     const b = document.createElement('button'); b.textContent = p.replace(/^(\d)(ST|ND|RD|TH)$/, '$1'); b.dataset.period = p;
-    b.onclick = () => put({ period: p }); $('periods').appendChild(b);
+    b.onclick = () => put(p !== d.period && QUARTERS.includes(p) ? { period: p, homeFouls: 0, awayFouls: 0 } : { period: p });
+    $('periods').appendChild(b);
   });
   document.querySelectorAll('[data-poss]').forEach(b => b.onclick = () => put({ poss: b.dataset.poss }));
 
@@ -311,6 +320,7 @@
     for (const t of ['home', 'away']) {
       for (const k of ['Score', 'Fouls', 'TO']) $(t + k).textContent = d[t + k];
       document.querySelectorAll('.' + t + 'H, #' + t + 'Hdr').forEach(h => { h.textContent = d[t + 'Name']; h.style.borderColor = d[t + 'Color']; });
+      document.querySelectorAll('.team[data-team="' + t + '"]').forEach(b => { b.style.borderColor = d[t + 'Color']; b.style.boxShadow = '0 0 8px ' + d[t + 'Color']; });
       setVal(t + 'Name', d[t + 'Name']); setVal(t + 'Color', d[t + 'Color']);
       $(t + 'LogoPrev').src = d[t + 'Logo'] || '';
       $(t + 'LogoPrev').style.visibility = d[t + 'Logo'] ? 'visible' : 'hidden';

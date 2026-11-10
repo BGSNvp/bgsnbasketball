@@ -229,7 +229,7 @@
 
   // ─── Period / possession ───
   PERIODS.forEach(p => {
-    const b = document.createElement('button'); b.textContent = p; b.dataset.period = p;
+    const b = document.createElement('button'); b.textContent = p.replace(/^(\d)(ST|ND|RD|TH)$/, '$1'); b.dataset.period = p;
     b.onclick = () => put({ period: p }); $('periods').appendChild(b);
   });
   document.querySelectorAll('[data-poss]').forEach(b => b.onclick = () => put({ poss: b.dataset.poss }));

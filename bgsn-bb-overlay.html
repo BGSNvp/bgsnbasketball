@@ -24,8 +24,8 @@
     transform: translate(var(--x, 0px), var(--y, 0px)) scale(var(--z, 1)) scaleX(var(--f, 1)); }
   .logo img[src=''] { display: none; }
 
-  .name { position: absolute; left: 76px; right: 12px; top: 0; bottom: 0; display: flex; align-items: center;
-    font: 700 34px 'Oswald', sans-serif; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; overflow: hidden;
+  .name { position: absolute; left: 76px; top: 0; bottom: 0; display: flex; align-items: center;
+    font: 700 34px 'Oswald', sans-serif; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap;
     text-shadow: 0 1px 3px rgba(0,0,0,0.6); transform: translate(var(--nx, 0px), var(--ny, 0px)); z-index: 1; }
   .rank { color: var(--gold); font-size: 0.6em; margin-right: 2px; }
   .poss { width: 0; height: 0; margin-left: 10px; flex: none; border-top: 9px solid transparent; border-bottom: 9px solid transparent;
@@ -162,13 +162,19 @@
     tick();
   }
 
-  // Shrink long names to fit; both rows shrink together so they match
+  // Both team boxes are sized to the longer name so the fouls/BONUS area sits snug after it.
+  // Names too long for the widest box shrink together so both rows match.
+  const BOX_MIN = 180, BOX_MAX = 324, NAME_LEFT = 76, NAME_PAD = 14;
   function fitNames() {
     const boxes = [$('homeName').parentElement, $('awayName').parentElement];
+    const need = () => Math.max(...boxes.map(b =>
+      NAME_LEFT + Math.max(0, parseFloat(b.style.getPropertyValue('--nx')) || 0) + b.scrollWidth + NAME_PAD));
     let fs = 34;
     const apply = () => boxes.forEach(b => b.style.fontSize = fs + 'px');
     apply();
-    while (boxes.some(b => b.scrollWidth > b.clientWidth) && fs > 16) { fs -= 1; apply(); }
+    while (need() > BOX_MAX && fs > 16) { fs -= 1; apply(); }
+    const w = Math.max(BOX_MIN, Math.min(BOX_MAX, Math.ceil(need())));
+    document.querySelectorAll('.teambox').forEach(tb => tb.style.width = w + 'px');
   }
 
   // ─── Tickers (ported from the football overlay) ───

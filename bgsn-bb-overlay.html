@@ -16,11 +16,13 @@
   .bug.hidden { opacity: 0; }
   .main { display: grid; grid-template-columns: auto 160px; }
   .rows { display: flex; flex-direction: column; gap: 2px; background: #000; }
-  .row { display: flex; height: 58px; }
+  /* Team color fades from the logo across name + fouls, reaching black at the score box */
+  .row { display: flex; height: 58px; background: #141414 linear-gradient(90deg, var(--c) 0, var(--c) 60px, #141414 100%) no-repeat;
+    background-size: calc(100% - 84px) 100%; }
 
   /* Logo + team name share one box; each can be moved inside it */
   .away { --c: var(--away); } .home { --c: var(--home); }
-  .teambox { position: relative; width: 324px; overflow: hidden; background: linear-gradient(90deg, var(--c) 0%, var(--c) 18%, #141414 100%); }
+  .teambox { position: relative; width: 324px; overflow: hidden; }
   .logo { position: absolute; left: 0; top: 0; bottom: 0; width: 64px; display: flex; align-items: center; justify-content: center; }
   .logo img { max-height: 48px; max-width: 56px; object-fit: contain;
     transform: translate(var(--x, 0px), var(--y, 0px)) scale(var(--z, 1)) scaleX(var(--f, 1)); }
@@ -35,7 +37,7 @@
   .poss.on { visibility: visible; }
   .possOff .poss { display: none; }
 
-  .info { background: #141414; display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
+  .info { display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
     gap: 7px; padding: 0 10px 0 4px; font: 700 15px Arial, sans-serif; color: #c8c8c8; letter-spacing: 1px; white-space: nowrap; }
   .info b { color: #fff; }
   .tos { display: flex; gap: 4px; }

@@ -8,37 +8,39 @@
 <style>
   :root { --bg: #05070b; --card: #0e1118; --neon: #00ffd0; --gold: #ffd960; --red: #ff4d4d; --text: #ffffff; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: var(--bg); color: var(--text); font-family: 'Barlow Condensed', sans-serif; font-size: 18px; padding: 8px; }
-  header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; max-width: 680px; margin: 0 auto 8px; }
+  body { background: var(--bg); color: var(--text); font-family: 'Barlow Condensed', sans-serif; font-size: 16px; padding: 6px; }
+  header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; max-width: 1180px; margin: 0 auto 6px; }
   h1 { font-family: 'Orbitron', sans-serif; font-size: 20px; letter-spacing: 3px; }
   h1 span { color: var(--gold); }
   #status { font-size: 17px; font-weight: 700; padding: 4px 12px; border-radius: 20px; border: 2px solid var(--neon); color: var(--neon); }
   #status.bad { border-color: var(--red); color: var(--red); }
-  .wrap { max-width: 680px; margin: 0 auto; display: grid; gap: 8px; }
-  section { background: var(--card); border: 3px solid var(--neon); border-radius: 10px; padding: 8px 10px; box-shadow: 0 0 10px rgba(0,255,208,0.35); }
+  .wrap { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; align-items: start; }
+  section.wide { grid-column: 1 / -1; }
+  section { background: var(--card); border: 3px solid var(--neon); border-radius: 8px; padding: 5px 8px; box-shadow: 0 0 10px rgba(0,255,208,0.35); }
   section.gold { border-color: var(--gold); box-shadow: 0 0 12px rgba(255,217,96,0.35); }
   section.pink { border-color: #ff4dd2; box-shadow: 0 0 12px rgba(255,77,210,0.35); }
-  h2 { font-size: 20px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
-  .note { color: #fff; font-size: 17px; line-height: 1.25; margin: 4px 0 6px; }
-  .row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin: 5px 0; }
-  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .team { border: 2px solid #3a3f4d; border-radius: 8px; padding: 6px 8px; }
-  .team h3 { font-size: 19px; letter-spacing: 2px; text-transform: uppercase; border-bottom: 3px solid; padding-bottom: 2px; margin-bottom: 4px; }
-  button { font-family: inherit; font-size: 19px; font-weight: 700; color: #fff; background: #222838; border: 2px solid #59607a; border-radius: 8px; padding: 6px 12px; min-width: 50px; cursor: pointer; }
+  h2 { font-size: 17px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 2px; }
+  .note { color: #fff; font-size: 15px; line-height: 1.2; margin: 2px 0 3px; }
+  .row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin: 3px 0; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .team { border: 2px solid #3a3f4d; border-radius: 6px; padding: 3px 6px; }
+  .team h3 { font-size: 16px; letter-spacing: 2px; text-transform: uppercase; border-bottom: 3px solid; padding-bottom: 1px; margin-bottom: 2px; }
+  button { font-family: inherit; font-size: 17px; font-weight: 700; color: #fff; background: #222838; border: 2px solid #59607a; border-radius: 6px; padding: 3px 9px; min-width: 40px; cursor: pointer; }
   button:active { transform: scale(0.96); }
-  button.big { font-size: 22px; padding: 9px 18px; }
+  button.big { font-size: 19px; padding: 5px 14px; }
   button.go { background: #0b6b3a; border-color: #2bff95; }
   button.stop { background: #7a1010; border-color: var(--red); }
   button.sel { background: var(--gold); color: #1a1405; border-color: #fff; }
-  .num { font-family: 'Orbitron', sans-serif; font-size: 32px; min-width: 64px; text-align: center; }
-  .clock { font-family: 'Orbitron', sans-serif; font-size: 52px; text-align: center; letter-spacing: 2px; }
+  .num { font-family: 'Orbitron', sans-serif; font-size: 26px; min-width: 50px; text-align: center; }
+  .clock { font-family: 'Orbitron', sans-serif; font-size: 42px; text-align: center; letter-spacing: 2px; }
   .clock.running { color: #2bff95; }
-  input[type=text], input[type=number] { font-family: inherit; font-size: 19px; font-weight: 700; padding: 5px 8px; border-radius: 6px; border: 2px solid #59607a; background: #000; color: #fff; text-transform: uppercase; min-width: 0; }
-  input[type=number] { width: 70px; }
-  input[type=color] { width: 54px; height: 38px; border: 2px solid #59607a; border-radius: 8px; background: #000; }
+  input[type=text], input[type=number] { font-family: inherit; font-size: 17px; font-weight: 700; padding: 3px 6px; border-radius: 6px; border: 2px solid #59607a; background: #000; color: #fff; text-transform: uppercase; min-width: 0; }
+  input[type=number] { width: 60px; }
+  input[type=color] { width: 46px; height: 30px; border: 2px solid #59607a; border-radius: 8px; background: #000; }
   label { font-weight: 700; }
-  .logo-prev { width: 54px; height: 38px; object-fit: contain; background: #000; border: 2px solid #3a3f4d; border-radius: 8px; }
-  @media (max-width: 560px) { .cols { grid-template-columns: 1fr; } .clock { font-size: 44px; } }
+  .logo-prev { width: 46px; height: 30px; object-fit: contain; background: #000; border: 2px solid #3a3f4d; border-radius: 8px; }
+  @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } }
+  @media (max-width: 560px) { .cols { grid-template-columns: 1fr; } .clock { font-size: 36px; } }
 </style>
 </head>
 <body>
@@ -71,12 +73,10 @@
     <h2>Score</h2>
     <div class="cols">
       <div class="team"><h3 id="awayHdr" style="border-color:#c41a1a">AWAY</h3>
-        <div class="row"><span class="num" id="awayScore">0</span></div>
-        <div class="row"><button data-score="away:1">+1</button><button data-score="away:2">+2</button><button data-score="away:3">+3</button><button data-score="away:-1">−1</button></div>
+        <div class="row"><span class="num" id="awayScore">0</span><button data-score="away:1">+1</button><button data-score="away:2">+2</button><button data-score="away:3">+3</button><button data-score="away:-1">−1</button></div>
       </div>
       <div class="team"><h3 id="homeHdr" style="border-color:#1a6fc4">HOME</h3>
-        <div class="row"><span class="num" id="homeScore">0</span></div>
-        <div class="row"><button data-score="home:1">+1</button><button data-score="home:2">+2</button><button data-score="home:3">+3</button><button data-score="home:-1">−1</button></div>
+        <div class="row"><span class="num" id="homeScore">0</span><button data-score="home:1">+1</button><button data-score="home:2">+2</button><button data-score="home:3">+3</button><button data-score="home:-1">−1</button></div>
       </div>
     </div>
   </section>
@@ -107,7 +107,7 @@
     <div class="row"><button data-poss="away" class="big">◀ AWAY</button><button data-poss="" class="big">OFF</button><button data-poss="home" class="big">HOME ▶</button></div>
   </section>
 
-  <section class="pink">
+  <section class="pink wide">
     <h2>Teams</h2>
     <div class="note">Logo buttons: ◀ ▶ ▲ ▼ move the logo inside its box, Flip mirrors it, Reset puts size and position back to normal.</div>
     <div class="note">Type a rank with # before or after the name (like "#3 TROJANS" or "TROJANS #3"). The number shows in gold without the #.</div>
@@ -129,7 +129,7 @@
     </div>
   </section>
 
-  <section>
+  <section class="wide">
     <h2>Sponsor &amp; Display</h2>
     <div class="row"><label>Sponsor</label><input type="text" id="sponsor" maxlength="30" style="flex:1" placeholder="leave empty to hide"></div>
     <div class="row"><button id="toggleShow" class="big">HIDE SCOREBOARD</button></div>

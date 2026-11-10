@@ -16,16 +16,17 @@
   .rows { display: flex; flex-direction: column; gap: 2px; background: #000; }
   .row { display: flex; height: 58px; }
 
-  .logo { position: relative; width: 64px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  /* Logo + team name share one box; each can be moved inside it */
   .away { --c: var(--away); } .home { --c: var(--home); }
-  .logo { background: var(--c); }
+  .teambox { position: relative; width: 324px; overflow: hidden; background: linear-gradient(90deg, var(--c) 0%, var(--c) 18%, #141414 100%); }
+  .logo { position: absolute; left: 0; top: 0; bottom: 0; width: 64px; display: flex; align-items: center; justify-content: center; }
   .logo img { max-height: 48px; max-width: 56px; object-fit: contain;
     transform: translate(var(--x, 0px), var(--y, 0px)) scale(var(--z, 1)) scaleX(var(--f, 1)); }
   .logo img[src=''] { display: none; }
 
-  .name { width: 260px; background: #141414; display: flex; align-items: center; padding: 0 12px;
-    font: 700 34px 'Oswald', sans-serif; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; overflow: hidden; }
-  .name { background: linear-gradient(90deg, var(--c) 0%, #141414 100%); text-shadow: 0 1px 3px rgba(0,0,0,0.6); }
+  .name { position: absolute; left: 76px; right: 12px; top: 0; bottom: 0; display: flex; align-items: center;
+    font: 700 34px 'Oswald', sans-serif; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; overflow: hidden;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6); transform: translate(var(--nx, 0px), var(--ny, 0px)); z-index: 1; }
   .rank { color: var(--gold); font-size: 0.6em; margin-right: 2px; }
   .poss { width: 0; height: 0; margin-left: 10px; flex: none; border-top: 9px solid transparent; border-bottom: 9px solid transparent;
     border-right: 12px solid var(--gold); visibility: hidden; }
@@ -59,14 +60,14 @@
   <div class="main">
     <div class="rows">
       <div class="row away">
-        <div class="logo"><img id="awayLogo" src="" alt=""></div>
-        <div class="name"><span id="awayName">AWAY</span><span class="poss" id="possAway"></span></div>
+        <div class="teambox"><div class="logo"><img id="awayLogo" src="" alt=""></div>
+        <div class="name"><span id="awayName">AWAY</span><span class="poss" id="possAway"></span></div></div>
         <div class="info"><div class="tos" id="awayTOs"></div><div><span class="bonus" id="awayBonus">BONUS</span>FOULS <b id="awayFouls">0</b></div></div>
         <div class="score" id="awayScore">0</div>
       </div>
       <div class="row home">
-        <div class="logo"><img id="homeLogo" src="" alt=""></div>
-        <div class="name"><span id="homeName">HOME</span><span class="poss" id="possHome"></span></div>
+        <div class="teambox"><div class="logo"><img id="homeLogo" src="" alt=""></div>
+        <div class="name"><span id="homeName">HOME</span><span class="poss" id="possHome"></span></div></div>
         <div class="info"><div class="tos" id="homeTOs"></div><div><span class="bonus" id="homeBonus">BONUS</span>FOULS <b id="homeFouls">0</b></div></div>
         <div class="score" id="homeScore">0</div>
       </div>
@@ -107,6 +108,9 @@
       img.style.setProperty('--x', (Number(d[t + 'LogoX']) || 0) + 'px');
       img.style.setProperty('--y', (Number(d[t + 'LogoY']) || 0) + 'px');
       img.style.setProperty('--f', d[t + 'LogoFlip'] ? -1 : 1);
+      const nm = $(t + 'Name').parentElement;
+      nm.style.setProperty('--nx', (Number(d[t + 'NameX']) || 0) + 'px');
+      nm.style.setProperty('--ny', (Number(d[t + 'NameY']) || 0) + 'px');
       const max = Math.max(0, Math.min(10, Number(d.maxTO) || 0));
       dots($(t + 'TOs'), Math.min(max, Number(d[t + 'TO']) || 0), max);
     }

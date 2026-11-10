@@ -165,6 +165,11 @@
     <div class="row"><label>Sponsor</label><input type="text" id="sponsor" maxlength="200" style="flex:1" placeholder="leave empty to hide"></div>
     <div class="note">More than one sponsor? Separate them with | (like "Smith Dental | Joe's Pizza"). They take turns every 15 seconds.</div>
     <div class="row"><button id="toggleShow" class="big">HIDE SCOREBOARD</button></div>
+    <div class="note">Scoreboard size and spot. It grows from its bottom-left corner. Single arrows move 10, double arrows move 100.</div>
+    <div class="row"><label class="lbl">Size</label><button data-bugscale="-0.05">−</button><span class="val" id="bugScaleV">100%</span><button data-bugscale="0.05">+</button></div>
+    <div class="row"><label class="lbl">Move</label><button data-bugmove="X:-100">◀◀</button><button data-bugmove="X:-10">◀</button><button data-bugmove="X:10">▶</button><button data-bugmove="X:100">▶▶</button>
+      <button data-bugmove="Y:-100">▲▲</button><button data-bugmove="Y:-10">▲</button><button data-bugmove="Y:10">▼</button><button data-bugmove="Y:100">▼▼</button>
+      <span class="val" id="bugPosV">0, 0</span><button id="bugReset">Reset</button></div>
     <div class="note">New Game sets scores, fouls and timeouts back to the start, period to 1ST and the clock to a full period. Team names, colors and logos stay.</div>
     <div class="row"><button id="newGame" class="stop">NEW GAME</button></div>
   </section>
@@ -308,6 +313,14 @@
   // ─── Sponsor / display ───
   $('sponsor').oninput = () => { clearTimeout(typing); typing = setTimeout(() => put({ sponsor: $('sponsor').value.toUpperCase().trim() }), 600); };
   $('toggleShow').onclick = () => put({ visible: d.visible === false });
+  document.querySelectorAll('[data-bugscale]').forEach(b => b.onclick = () =>
+    put({ bugScale: Math.round(clamp((Number(d.bugScale) || 1) + Number(b.dataset.bugscale), 0.5, 2) * 100) / 100 }));
+  const BUG_LIM = { X: [-60, 1800], Y: [-1000, 200] };
+  document.querySelectorAll('[data-bugmove]').forEach(b => b.onclick = () => {
+    const [axis, n] = b.dataset.bugmove.split(':'); const f = 'bug' + axis;
+    put({ [f]: clamp((Number(d[f]) || 0) + Number(n), ...BUG_LIM[axis]) });
+  });
+  $('bugReset').onclick = () => put({ bugScale: 1, bugX: 0, bugY: 0 });
   $('newGame').onclick = () => {
     if (!confirm('Start a new game? Scores, fouls, timeouts, period and clock reset.')) return;
     put({ homeScore: 0, awayScore: 0, homeFouls: 0, awayFouls: 0, homeTO: d.maxTO, awayTO: d.maxTO,
@@ -330,6 +343,8 @@
     document.querySelectorAll('[data-poss]').forEach(b => b.classList.toggle('sel', b.dataset.poss === d.poss));
     const sb = $('startStop'); sb.textContent = d.clockRunning ? 'STOP' : 'START'; sb.className = 'big ' + (d.clockRunning ? 'stop' : 'go');
     $('toggleShow').textContent = d.visible === false ? 'SHOW SCOREBOARD' : 'HIDE SCOREBOARD';
+    $('bugScaleV').textContent = Math.round((Number(d.bugScale) || 1) * 100) + '%';
+    $('bugPosV').textContent = (Number(d.bugX) || 0) + ', ' + (Number(d.bugY) || 0);
     renderTickers();
   }
 

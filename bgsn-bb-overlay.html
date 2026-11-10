@@ -7,10 +7,12 @@
 <style>
   :root { --home: #1a6fc4; --away: #c41a1a; --gold: #ffcc00; --tgold: #ffd960; --chrome-hi: #e8ecf4; --gold-glow: rgba(255,217,96,0.6); }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { width: 1920px; height: 1080px; background: transparent; overflow: hidden; font-family: 'Roboto Condensed', sans-serif; color: #fff; }
+  /* Fixed 1920x1080 frame: tickers and scoreboard are placed in it no matter how big the OBS source is */
+  body { position: relative; width: 1920px; height: 1080px; background: transparent; overflow: hidden; font-family: 'Roboto Condensed', sans-serif; color: #fff; }
 
   /* ESPN-style stacked corner bug, bottom-left */
-  .bug { position: absolute; left: 60px; bottom: var(--bug-b, 96px); box-shadow: 0 4px 18px rgba(0,0,0,0.65); transition: opacity 0.4s; }
+  .bug { position: absolute; left: 60px; bottom: var(--bug-b, 96px); box-shadow: 0 4px 18px rgba(0,0,0,0.65); transition: opacity 0.4s;
+    transform: translate(var(--bx, 0px), var(--by, 0px)) scale(var(--bs, 1)); transform-origin: left bottom; }
   .bug.hidden { opacity: 0; }
   .main { display: grid; grid-template-columns: auto 160px; }
   .rows { display: flex; flex-direction: column; gap: 2px; background: #000; }
@@ -56,7 +58,7 @@
   .sponsor.off { display: none; }
 
   /* ─── Two bottom tickers (same look and controls as the football overlay) ─── */
-  .ticker { --tk-h: var(--tk1-h, 38px); position: absolute; bottom: var(--tk1-off, var(--tk2-h, 38px)); left: 0; right: 0; height: var(--tk-h);
+  .ticker { --tk-h: var(--tk1-h, 38px); position: absolute; bottom: var(--tk1-off, var(--tk2-h, 38px)); left: 0; width: 1920px; height: var(--tk-h);
     background: linear-gradient(180deg, #131320 0%, #08080e 100%); display: flex; align-items: center; overflow: hidden;
     border-top: 2px solid; border-image: linear-gradient(90deg, rgba(60,65,80,0.5), var(--chrome-hi), var(--tgold), var(--chrome-hi), rgba(60,65,80,0.5)) 1;
     box-shadow: inset 0 2px 8px rgba(255,255,255,0.04); }
@@ -133,6 +135,10 @@
     document.documentElement.style.setProperty('--home', d.homeColor);
     document.documentElement.style.setProperty('--away', d.awayColor);
     $('board').classList.toggle('hidden', d.visible === false);
+    const bs = Number(d.bugScale), board = $('board').style;
+    board.setProperty('--bs', bs >= 0.5 && bs <= 2 ? bs : 1);
+    board.setProperty('--bx', (Number(d.bugX) || 0) + 'px');
+    board.setProperty('--by', (Number(d.bugY) || 0) + 'px');
     for (const t of ['home', 'away']) {
       setRankText($(t + 'Name'), d[t + 'Name']);
       $(t + 'Score').textContent = d[t + 'Score'];

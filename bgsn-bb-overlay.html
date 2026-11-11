@@ -38,8 +38,8 @@
   .possOff .poss { display: none; }
 
   .info { display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
-    gap: 7px; padding: 0 10px 0 4px; font: 700 15px Arial, sans-serif; color: #c8c8c8; letter-spacing: 1px; white-space: nowrap; }
-  .info b { color: #fff; }
+    gap: 5px; padding: 0 10px 0 4px; font: 700 20px Arial, sans-serif; color: #c8c8c8; letter-spacing: 1px; white-space: nowrap; }
+  .info b { color: #fff; font-size: 24px; }
   .tos { display: flex; gap: 4px; }
   .to-dot { width: 15px; height: 5px; background: #444; }
   .to-dot.on { background: #fff; }
@@ -99,13 +99,13 @@
       <div class="row away">
         <div class="teambox"><div class="logo"><img id="awayLogo" src="" alt=""></div>
         <div class="name"><span id="awayName">AWAY</span><span class="poss" id="possAway"></span></div></div>
-        <div class="info"><div class="tos" id="awayTOs"></div><div>FOULS <b id="awayFouls">0</b><span class="bonus" id="awayBonus">BONUS</span></div></div>
+        <div class="info"><div class="tos" id="awayTOs"></div><div>FOULS: <b id="awayFouls">0</b><span class="bonus" id="awayBonus">BONUS</span></div></div>
         <div class="score" id="awayScore">0</div>
       </div>
       <div class="row home">
         <div class="teambox"><div class="logo"><img id="homeLogo" src="" alt=""></div>
         <div class="name"><span id="homeName">HOME</span><span class="poss" id="possHome"></span></div></div>
-        <div class="info"><div class="tos" id="homeTOs"></div><div>FOULS <b id="homeFouls">0</b><span class="bonus" id="homeBonus">BONUS</span></div></div>
+        <div class="info"><div class="tos" id="homeTOs"></div><div>FOULS: <b id="homeFouls">0</b><span class="bonus" id="homeBonus">BONUS</span></div></div>
         <div class="score" id="homeScore">0</div>
       </div>
     </div>

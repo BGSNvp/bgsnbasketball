@@ -57,7 +57,7 @@
 
   .sponsor { background: #0b0b0b; border-top: 2px solid var(--gold); padding: 4px 12px; text-align: center; font: 700 18px 'Oswald', sans-serif;
     letter-spacing: 3px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  #sponsorName { transition: opacity 0.5s; }
+  #sponsorInner { transition: opacity 0.5s; }
   .sponsor small { color: var(--gold); font-size: 14px; margin-right: 10px; }
   .sponsor.off { display: none; }
 
@@ -112,7 +112,7 @@
     </div>
     <div class="clockbox"><div class="clock" id="clock">8:00</div><div class="period" id="period">1ST</div></div>
   </div>
-  <div class="sponsor off" id="sponsor"><small>PRESENTED BY</small><span id="sponsorName"></span></div>
+  <div class="sponsor off" id="sponsor"><span id="sponsorInner"><small>PRESENTED BY</small><span id="sponsorName"></span></span></div>
 </div>
 
 <div class="ticker" id="tickerBar"><div class="ticker-label"><span>BGSN</span></div><div class="ticker-content"><div class="ticker-scroll" id="tickerScroll"></div></div></div>
@@ -275,11 +275,11 @@
     $('sponsor').classList.toggle('off', !list.length);
     if (list.join('|') === sponsors.join('|')) return;
     sponsors = list; spIdx = 0;
-    const el = $('sponsorName'); el.textContent = list[0] || ''; el.style.opacity = 1;
+    const el = $('sponsorInner'), name = $('sponsorName'); name.textContent = list[0] || ''; el.style.opacity = 1;
     clearInterval(spTimer); spTimer = null;
     if (list.length > 1) spTimer = setInterval(() => {
       el.style.opacity = 0;
-      setTimeout(() => { spIdx = (spIdx + 1) % sponsors.length; el.textContent = sponsors[spIdx] || ''; el.style.opacity = 1; }, 500);
+      setTimeout(() => { spIdx = (spIdx + 1) % sponsors.length; name.textContent = sponsors[spIdx] || ''; el.style.opacity = 1; }, 500);
     }, 15000);
   }
 

@@ -53,6 +53,9 @@
   .clockbox { background: #000; border-left: 2px solid #2a2a2a; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
   .clock { font: 900 48px 'Roboto Condensed', sans-serif; line-height: 1; }
   .clock.low { color: #ff4d4d; }
+  .clockbox.cam .clock { visibility: hidden; }
+  /* Gym clock video sits outside the scaled bug (no transformed ancestors), placed over the clock digits */
+  #clockVid { position: fixed; display: none; object-fit: contain; background: #000; z-index: 5; }
   .period { font: 700 36px 'Oswald', sans-serif; line-height: 1.1; color: var(--gold); letter-spacing: 2px; white-space: nowrap; }
 
   .sponsor { background: #0b0b0b; border-top: 2px solid var(--gold); padding: 4px 12px; text-align: center; font: 700 18px 'Oswald', sans-serif;
@@ -115,15 +118,20 @@
   <div class="sponsor off" id="sponsor"><span id="sponsorInner"><small>PRESENTED BY</small><span id="sponsorName"></span></span></div>
 </div>
 
+<video id="clockVid" muted playsinline autoplay></video>
+
 <div class="ticker" id="tickerBar"><div class="ticker-label"><span>BGSN</span></div><div class="ticker-content"><div class="ticker-scroll" id="tickerScroll"></div></div></div>
 <div class="ticker ticker-lower" id="ticker2Bar"><div class="ticker-label"><span id="ticker2DateTime"></span></div><div class="ticker-content"><div class="ticker-scroll" id="ticker2Scroll"></div></div></div>
 
 <script type="module">
   import { subscribe } from './bb-store.js';
   import { withDefaults, clockRemaining, formatClock, setRankText } from './bb-common.js';
+  import { createReceiver } from './bb-clockcam.js';
 
   const $ = id => document.getElementById(id);
   let data = withDefaults({});
+  const cam = createReceiver($('clockVid'));
+  const camAllowed = new URLSearchParams(location.search).get('clockcam') !== 'off';
 
   function dots(el, left, max) {
     el.textContent = '';
@@ -289,10 +297,22 @@
     const txt = formatClock(ms);
     if (el.textContent !== txt) el.textContent = txt;
     el.classList.toggle('low', ms < 60000);
+    const vid = $('clockVid'), box = el.parentElement;
+    const show = cam.isPlaying() && !$('board').classList.contains('hidden');
+    box.classList.toggle('cam', show);
+    if (show) {
+      const b = box.getBoundingClientRect(), p = $('period').getBoundingClientRect(), pad = 4 * b.width / 160, s = vid.style;
+      s.left = (b.left + pad) + 'px'; s.top = (b.top + pad) + 'px';
+      s.width = (b.width - 2 * pad) + 'px'; s.height = Math.max(10, p.top - b.top - pad) + 'px';
+      s.display = 'block';
+    } else vid.style.display = 'none';
   }
   setInterval(tick, 50);
 
-  subscribe(d => { data = withDefaults(d); render(); }, err => console.warn(err));
+  subscribe(d => {
+    data = withDefaults(d); render();
+    if (data.clockMode === 'gym' && camAllowed) cam.start(); else cam.stop();
+  }, err => console.warn(err));
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitNames);
   render();
 </script>

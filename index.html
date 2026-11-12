@@ -92,7 +92,8 @@
       <label>Period (min)</label><input type="number" id="periodLen" min="1" max="20" value="8"><button id="resetClock">Reset clock</button>
       <span style="display:inline-flex;gap:6px;align-items:center;margin-left:10px"><label>Possession</label><button data-poss="away">◀ AWAY</button><button data-poss="">OFF</button><button data-poss="home">HOME ▶</button></span>
     </div>
-    <div class="note">Space bar = Start / Stop. Tenths show under 1 minute. Reset clock sets a full period.</div>
+    <div class="row" style="justify-content:center"><label>Clock</label><button data-cmode="manual">MANUAL</button><button data-cmode="gym">GYM CAM</button><span id="camStatus" style="font-size:15px;margin-left:6px"></span></div>
+    <div class="note">Space bar = Start / Stop. Tenths show under 1 minute. Reset clock sets a full period. GYM CAM shows the phone's live clock video (open bb-clockcam.html on the phone); the manual clock keeps running underneath and shows whenever the video stops.</div>
   </section>
 
   <section>
@@ -186,6 +187,7 @@
 <script type="module">
   import { subscribe, save, configured } from './bb-store.js';
   import { withDefaults, clockRemaining, formatClock } from './bb-common.js';
+  import { subscribeCam } from './bb-clockcam.js';
 
   const $ = id => document.getElementById(id);
   const PERIODS = ['1ST', '2ND', '3RD', '4TH', 'OT', '2OT', 'HALF', 'FINAL'];
@@ -220,6 +222,16 @@
   $('setClock').onclick = () => clockSet((clamp(Number($('setMin').value) || 0, 0, 99) * 60 + clamp(Number($('setSec').value) || 0, 0, 59)) * 1000, false);
   $('periodLen').onchange = () => put({ periodLen: clamp(Number($('periodLen').value) || 8, 1, 20) * 60 });
   $('resetClock').onclick = () => clockSet(d.periodLen * 1000, false);
+  document.querySelectorAll('[data-cmode]').forEach(b => b.onclick = () => put({ clockMode: b.dataset.cmode }));
+  let camDoc = {};
+  subscribeCam(x => { camDoc = x; renderCam(); });
+  function renderCam() {
+    const el = $('camStatus');
+    if (d.clockMode !== 'gym') { el.textContent = ''; return; }
+    const at = camDoc.statusAt ? ' · ' + new Date(camDoc.statusAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '';
+    el.textContent = camDoc.status ? 'Cam: ' + camDoc.status + at : 'Cam: waiting for the phone';
+    el.style.color = camDoc.status === 'playing' ? '#2bff95' : '#ffd54a';
+  }
   setInterval(() => {
     const ms = clockRemaining(d);
     $('clock').textContent = formatClock(ms);
@@ -356,6 +368,8 @@
     setVal('periodLen', Math.round(d.periodLen / 60)); setVal('sponsor', d.sponsor);
     document.querySelectorAll('[data-period]').forEach(b => b.classList.toggle('sel', b.dataset.period === d.period));
     document.querySelectorAll('[data-poss]').forEach(b => b.classList.toggle('sel', b.dataset.poss === d.poss));
+    document.querySelectorAll('[data-cmode]').forEach(b => b.classList.toggle('sel', b.dataset.cmode === d.clockMode));
+    renderCam();
     const sb = $('startStop'); sb.textContent = d.clockRunning ? 'STOP' : 'START'; sb.className = 'big ' + (d.clockRunning ? 'stop' : 'go');
     $('toggleShow').textContent = d.visible === false ? 'SHOW SCOREBOARD' : 'HIDE SCOREBOARD';
     $('bugScaleV').textContent = Math.round((Number(d.bugScale) || 1) * 100) + '%';

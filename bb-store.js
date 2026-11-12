@@ -5,7 +5,8 @@ import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/f
 import { firebaseConfig } from "./firebase-config.js";
 
 export const configured = !!firebaseConfig.projectId && !String(firebaseConfig.apiKey).startsWith('PASTE');
-const ref = configured ? doc(getFirestore(initializeApp(firebaseConfig)), 'basketball', 'live') : null;
+export const db = configured ? getFirestore(initializeApp(firebaseConfig)) : null;
+const ref = db ? doc(db, 'basketball', 'live') : null;
 
 export function subscribe(onData, onError) {
   if (!ref) { if (onError) onError(new Error('Firebase not set up')); return () => {}; }

@@ -31,7 +31,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 
-const ref = doc(getFirestore(initializeApp(firebaseConfig)), 'basketball', 'camtest');
+const ref = doc(getFirestore(initializeApp(firebaseConfig)), 'basketball', 'camtest' + (new URLSearchParams(location.search).get('ch') || ''));
 const $ = id => document.getElementById(id);
 const say = (t, c) => { $('status').textContent = t; $('status').style.color = c || '#fff'; };
 let pc = null, stream = null, myTs = 0, statsTimer = null, wake = null;
@@ -99,11 +99,13 @@ async function start() {
 
     statsTimer = setInterval(async () => {
       if (!pc) return;
-      const st = await pc.getStats(); let pair = null; const c = {};
-      st.forEach(r => { if (r.type === 'candidate-pair' && (r.selected || r.nominated) && r.state === 'succeeded') pair = r; if (r.type === 'local-candidate' || r.type === 'remote-candidate') c[r.id] = r; });
+      const st = await pc.getStats(); let pair = null; const c = {}; let fps = null, w = 0, h = 0;
+      st.forEach(r => { if (r.type === 'outbound-rtp' && (r.kind === 'video' || r.mediaType === 'video')) { fps = r.framesPerSecond; w = r.frameWidth; h = r.frameHeight; }
+        if (r.type === 'candidate-pair' && (r.selected || r.nominated) && r.state === 'succeeded') pair = r; if (r.type === 'local-candidate' || r.type === 'remote-candidate') c[r.id] = r; });
       if (pair && c[pair.localCandidateId]) {
         const l = c[pair.localCandidateId].candidateType, r = c[pair.remoteCandidateId] ? c[pair.remoteCandidateId].candidateType : '?';
-        $('path').textContent = (l === 'host' && r === 'host') ? 'Path: direct over Wi-Fi' : 'Path: ' + l + ' → ' + r;
+        $('path').textContent = ((l === 'host' && r === 'host') ? 'Path: direct over Wi-Fi' : 'Path: ' + l + ' → ' + r)
+          + (fps != null ? ' · sending ' + w + '×' + h + ' at ' + Math.round(fps) + ' fps' : '');
       }
     }, 2000);
   } catch (e) {

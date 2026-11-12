@@ -11,7 +11,7 @@ export const DEFAULTS = {
   ticker2: 'Welcome to BGSN Sports Network | Follow us for live coverage every game day',
   ticker1On: true, ticker2On: true, tickerSpeed1: 35, tickerSpeed2: 33,
   tickerShift1: 0, tickerShift2: 0, tickerSize1: 38, tickerSize2: 38,
-  bugScale: 1, bugX: 0, bugY: 0
+  bugScale: 1, bugX: 0, bugY: 0, clockMode: 'manual'
 };
 
 export function withDefaults(d) { return Object.assign({}, DEFAULTS, d || {}); }

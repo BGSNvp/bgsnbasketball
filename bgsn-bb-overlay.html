@@ -14,6 +14,17 @@
   .bug { position: absolute; left: 60px; bottom: var(--bug-b, 96px); box-shadow: 0 4px 18px rgba(0,0,0,0.65); transition: opacity 0.4s;
     transform: translate(var(--bx, 0px), var(--by, 0px)) scale(var(--bs, 1)); transform-origin: left bottom; }
   .bug.hidden { opacity: 0; }
+  /* Thin chrome frame around the whole board, with a few soft glints on it */
+  .bug { border: 3px solid transparent;
+    background: linear-gradient(#000, #000) padding-box,
+      linear-gradient(115deg, #6f747c 0%, #e9edf1 9%, #8c9199 17%, #c9ced4 30%, #5f646c 41%, #f4f6f8 52%, #8a8f97 61%,
+        #d6dade 74%, #666b73 84%, #eef1f4 93%, #7a7f87 100%) border-box; }
+  .bug::after { content: ''; position: absolute; inset: -3px; padding: 3px; pointer-events: none; z-index: 2;
+    background: radial-gradient(18px 6px at 12% 0, #fff, transparent 70%), radial-gradient(26px 6px at 47% 100%, #fff, transparent 70%),
+      radial-gradient(16px 6px at 71% 0, #fff, transparent 70%), radial-gradient(6px 18px at 100% 28%, #fff, transparent 70%),
+      radial-gradient(6px 14px at 0 66%, #fff, transparent 70%), radial-gradient(20px 6px at 90% 100%, #fff, transparent 70%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
   .main { display: grid; grid-template-columns: auto 160px; }
   .rows { display: flex; flex-direction: column; gap: 2px; background: #000; }
   /* Team color fades from the logo across name + fouls, reaching black at the score box */
@@ -48,16 +59,16 @@
   .bonus.on { display: inline; }
 
   .score { width: 84px; background: #fff; color: #111; display: flex; align-items: center; justify-content: center;
-    font: 900 50px 'Roboto Condensed', sans-serif; } /* 50px: a 3-digit score (188) still fits the 84px box */
+    font: 900 50px 'Roboto Condensed', sans-serif; box-sizing: border-box; padding-top: 2px; } /* 50px: a 3-digit score (188) still fits the 84px box */
 
   .clockbox { background: #000; border-left: 2px solid #2a2a2a; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
   /* Gym clock video fills this area above the quarter; manual digits match the 50px score size */
-  .clock { font: 900 50px 'Roboto Condensed', sans-serif; line-height: 1; width: 152px; height: 66px; display: flex; align-items: center; justify-content: center; overflow: hidden; white-space: nowrap; }
+  .clock { font: 900 50px 'Roboto Condensed', sans-serif; line-height: 1; width: 152px; height: 66px; box-sizing: border-box; padding-top: 2px; display: flex; align-items: center; justify-content: center; overflow: hidden; white-space: nowrap; }
   .clock.low { color: #ff4d4d; }
   .clockbox.cam .clock { visibility: hidden; }
   /* Gym clock video sits outside the scaled bug (no transformed ancestors), placed over the clock digits */
   #clockVid { position: fixed; display: none; object-fit: contain; background: #000; z-index: 5; }
-  .period { font: 700 36px 'Oswald', sans-serif; line-height: 1.1; color: var(--gold); letter-spacing: 2px; white-space: nowrap; }
+  .period { position: relative; top: -3px; font: 700 36px 'Oswald', sans-serif; line-height: 1.1; color: var(--gold); letter-spacing: 2px; white-space: nowrap; }
 
   .sponsor { background: #0b0b0b; border-top: 2px solid var(--gold); padding: 4px 12px; text-align: center; font: 700 18px 'Oswald', sans-serif;
     letter-spacing: 3px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

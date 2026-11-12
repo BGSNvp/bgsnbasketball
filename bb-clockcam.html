@@ -5,32 +5,33 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BGSN Basketball – Clock Cam</title>
 <style>
-  body { margin: 0; background: #000; color: #fff; font: 700 20px Arial, sans-serif; padding: 12px; }
-  h1 { font-size: 24px; margin: 0 0 10px; color: #00e5ff; }
-  .box { border: 2px solid #00e5ff; border-radius: 10px; padding: 10px; margin-bottom: 12px; box-shadow: 0 0 10px #00e5ff66; }
-  .lbl { color: #ffd54a; margin-bottom: 6px; }
-  select, button { font: 700 22px Arial, sans-serif; width: 100%; padding: 12px; margin-top: 8px; border-radius: 8px; border: 2px solid #fff; background: #111; color: #fff; }
+  body { margin: 0; background: #000; color: #fff; font: 700 18px Arial, sans-serif; padding: 8px; }
+  h1 { font-size: 20px; margin: 0 0 6px; color: #00e5ff; }
+  .box { border: 2px solid #00e5ff; border-radius: 10px; padding: 8px; margin-bottom: 8px; box-shadow: 0 0 10px #00e5ff66; }
+  .lbl { color: #ffd54a; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  select, button { font: 700 20px Arial, sans-serif; padding: 10px; border-radius: 8px; border: 2px solid #fff; background: #111; color: #fff; }
+  .ctl { display: flex; gap: 8px; margin-top: 6px; } .ctl select { flex: 1.3; min-width: 0; } .ctl button { flex: 1; }
+  button.sm { font-size: 15px; padding: 6px 10px; }
   #go { background: #0a7d2c; } #go.stop { background: #a31515; }
-  #status { font-size: 22px; }
-  .note { font-weight: 400; font-size: 17px; }
-  #stage { position: relative; touch-action: none; user-select: none; -webkit-user-select: none; }
-  #preview { display: block; width: 100%; background: #222; border-radius: 6px; }
+  #status { font-size: 17px; }
+  .note { font-weight: 400; font-size: 15px; }
+  /* Sized so controls, camera and preview fit one phone screen; the stage hugs the video so drag coordinates match it */
+  #stage { position: relative; width: fit-content; max-width: 100%; margin: 0 auto; touch-action: none; user-select: none; -webkit-user-select: none; }
+  #preview { display: block; max-width: 100%; max-height: 32vh; background: #222; border-radius: 6px; }
   #sel { position: absolute; border: 3px solid #ffd54a; box-shadow: 0 0 0 9999px rgba(0,0,0,0.45); pointer-events: none; }
-  #out { display: block; max-width: 100%; max-height: 200px; margin: 0 auto; background: #222; }
+  #out { display: block; max-width: 100%; max-height: 12vh; margin: 0 auto; background: #222; }
 </style>
 </head>
 <body>
 <h1>CLOCK CAM</h1>
 <div class="box">
-  <div class="note">Use the same Wi-Fi as the YoloBox. Aim at the gym clock and press START, then drag a box around the clock digits. Keep this page open with the screen on.</div>
-  <select id="cam"><option value="">Back camera</option></select>
-  <button id="go">START</button>
+  <div class="note">Same Wi-Fi as the YoloBox. Press START, then drag a box around the clock digits.</div>
+  <div class="ctl"><select id="cam"><option value="">Back camera</option></select><button id="go">START</button></div>
 </div>
 <div class="box"><div id="status">Not started</div><div id="path" class="note"></div><div id="scoreSays" class="note"></div></div>
 <div class="box">
-  <div class="lbl">Drag a box around the clock</div>
+  <div class="lbl">Drag a box on the clock <button id="full" class="sm">WHOLE</button></div>
   <div id="stage"><video id="preview" autoplay playsinline muted></video><div id="sel"></div></div>
-  <button id="full">USE WHOLE PICTURE</button>
 </div>
 <div class="box"><div class="lbl">What the scoreboard shows</div><canvas id="out" width="320" height="128"></canvas></div>
 
@@ -149,7 +150,7 @@ async function start() {
     if (!outStream) outStream = out.captureStream(30);
     if (!looping) { looping = true; next(); }
     listCams();
-    try { wake = await navigator.wakeLock.request('screen'); } catch (e) {}
+    keepAwake();
     $('go').textContent = 'STOP'; $('go').classList.add('stop');
     lastWant = doc.want || 0;
     offer();
@@ -166,9 +167,17 @@ function stop() {
   say('Stopped');
 }
 
-document.addEventListener('visibilitychange', async () => {
-  if (cam && document.visibilityState === 'visible' && !wake) try { wake = await navigator.wakeLock.request('screen'); } catch (e) {}
-});
+// The browser drops the screen lock whenever the page is hidden, so take it again each time it comes back.
+async function keepAwake() {
+  if (wake || !navigator.wakeLock) return;
+  try {
+    const w = await navigator.wakeLock.request('screen');
+    if (!cam) { w.release().catch(() => {}); return; }
+    wake = w;
+    w.addEventListener('release', () => { if (wake === w) wake = null; });
+  } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => { if (cam && document.visibilityState === 'visible') keepAwake(); });
 $('go').onclick = () => cam ? stop() : start();
 listCams();
 </script>

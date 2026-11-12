@@ -72,11 +72,13 @@
   #clockVid { position: fixed; display: none; object-fit: contain; background: #000; z-index: 5; }
   .period { position: relative; top: -3px; font: 700 36px 'Oswald', sans-serif; line-height: 1.1; color: var(--gold); letter-spacing: 2px; white-space: nowrap; }
 
-  .sponsor { background: #0b0b0b; border-top: 2px solid var(--gold); padding: 4px 12px; text-align: center; font: 700 18px 'Oswald', sans-serif;
-    letter-spacing: 3px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  #sponsorInner { transition: opacity 0.5s; }
-  /* The smaller PRESENTED BY shares the name's baseline, so lift it to sit centered in the bar too */
-  .sponsor small { color: var(--gold); font-size: 14px; margin-right: 10px; position: relative; top: -2px; }
+  .sponsor { background: #0b0b0b; border-top: 2px solid var(--gold); padding: 0 12px; height: 36px; box-sizing: border-box;
+    display: flex; align-items: center; font: 700 24px/1 'Oswald', sans-serif;
+    letter-spacing: 3px; text-transform: uppercase; white-space: nowrap; overflow: hidden; width: 0; min-width: 100%; }
+  #sponsorInner { display: flex; align-items: center; margin: 0 auto; transition: opacity 0.5s; }
+  /* Each part is centered on its own; the name sits slightly low in its line box, so nudge it up */
+  #sponsorName { position: relative; top: -0.07em; }
+  .sponsor small { color: var(--gold); font-size: 0.71em; margin-right: 0.5em; }
   .sponsor.off { display: none; }
 
   /* ─── Two bottom tickers (same look and controls as the football overlay) ─── */
@@ -200,6 +202,13 @@
   // Both team boxes are sized to the longer name so the fouls/BONUS area sits snug after it.
   // Names too long for the widest box shrink together so both rows match.
   const BOX_MIN = 180, BOX_MAX = 324, NAME_LEFT = 76, NAME_PAD = 8;
+  // The sponsor bar takes the board's width without widening it; long names shrink to fit
+  function fitSponsor() {
+    const sp = $('sponsor');
+    sp.style.fontSize = '';
+    for (let f = 24; sp.scrollWidth > sp.clientWidth && f > 14; f -= 1) sp.style.fontSize = (f - 1) + 'px';
+  }
+
   function fitNames() {
     const boxes = [$('homeName').parentElement, $('awayName').parentElement];
     const need = () => Math.max(...boxes.map(b =>
@@ -215,6 +224,7 @@
     infos.forEach(i => i.style.width = '');
     const iw = Math.max(...infos.map(i => i.offsetWidth));
     infos.forEach(i => i.style.width = iw + 'px');
+    fitSponsor();
   }
 
   // ─── Tickers (ported from the football overlay) ───
@@ -303,7 +313,7 @@
     clearInterval(spTimer); spTimer = null;
     if (list.length > 1) spTimer = setInterval(() => {
       el.style.opacity = 0;
-      setTimeout(() => { spIdx = (spIdx + 1) % sponsors.length; name.textContent = sponsors[spIdx] || ''; el.style.opacity = 1; }, 500);
+      setTimeout(() => { spIdx = (spIdx + 1) % sponsors.length; name.textContent = sponsors[spIdx] || ''; fitSponsor(); el.style.opacity = 1; }, 500);
     }, 15000);
   }
 

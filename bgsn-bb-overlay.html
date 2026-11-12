@@ -26,7 +26,10 @@
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
     mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
   .main { display: grid; grid-template-columns: auto 160px; }
-  .rows { display: flex; flex-direction: column; gap: 2px; background: #000; }
+  /* The gap between the team rows shows this chrome, matching the frame around the board */
+  .rows { display: flex; flex-direction: column; gap: 3px;
+    background: radial-gradient(22px 4px at 28% 50%, #fff, transparent 70%), radial-gradient(18px 4px at 76% 50%, #fff, transparent 70%),
+      linear-gradient(90deg, #6f747c 0%, #e9edf1 12%, #8c9199 24%, #c9ced4 38%, #5f646c 50%, #f4f6f8 63%, #8a8f97 75%, #d6dade 88%, #7a7f87 100%); }
   /* Team color fades from the logo across name + fouls, reaching black at the score box */
   .row { display: flex; height: 58px; background: #141414 linear-gradient(90deg, var(--c) 0, var(--c) 60px, #141414 100%) no-repeat;
     background-size: calc(100% - 84px) 100%; }

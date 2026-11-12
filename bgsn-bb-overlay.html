@@ -48,10 +48,11 @@
   .bonus.on { display: inline; }
 
   .score { width: 84px; background: #fff; color: #111; display: flex; align-items: center; justify-content: center;
-    font: 900 42px 'Roboto Condensed', sans-serif; }
+    font: 900 50px 'Roboto Condensed', sans-serif; } /* 50px: a 3-digit score (188) still fits the 84px box */
 
   .clockbox { background: #000; border-left: 2px solid #2a2a2a; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
-  .clock { font: 900 48px 'Roboto Condensed', sans-serif; line-height: 1; }
+  /* Manual digits and gym clock video share this exact area above the quarter */
+  .clock { font: 900 64px 'Roboto Condensed', sans-serif; line-height: 1; width: 152px; height: 66px; display: flex; align-items: center; justify-content: center; overflow: hidden; white-space: nowrap; }
   .clock.low { color: #ff4d4d; }
   .clockbox.cam .clock { visibility: hidden; }
   /* Gym clock video sits outside the scaled bug (no transformed ancestors), placed over the clock digits */
@@ -131,6 +132,7 @@
   const $ = id => document.getElementById(id);
   let data = withDefaults({});
   const cam = createReceiver($('clockVid'));
+  document.fonts.ready.then(() => { $('clock')._len = -1; });
   const camAllowed = new URLSearchParams(location.search).get('clockcam') !== 'off';
 
   function dots(el, left, max) {
@@ -296,14 +298,17 @@
     const el = $('clock');
     const txt = formatClock(ms);
     if (el.textContent !== txt) el.textContent = txt;
+    if (txt.length !== el._len) {
+      el._len = txt.length; el.style.fontSize = '';
+      for (let f = 64; el.scrollWidth > el.clientWidth && f > 30; f -= 2) el.style.fontSize = (f - 2) + 'px';
+    }
     el.classList.toggle('low', ms < 60000);
     const vid = $('clockVid'), box = el.parentElement;
     const show = cam.isPlaying() && !$('board').classList.contains('hidden');
     box.classList.toggle('cam', show);
     if (show) {
-      const b = box.getBoundingClientRect(), p = $('period').getBoundingClientRect(), pad = 4 * b.width / 160, s = vid.style;
-      s.left = (b.left + pad) + 'px'; s.top = (b.top + pad) + 'px';
-      s.width = (b.width - 2 * pad) + 'px'; s.height = Math.max(10, p.top - b.top - pad) + 'px';
+      const r = el.getBoundingClientRect(), s = vid.style;
+      s.left = r.left + 'px'; s.top = r.top + 'px'; s.width = r.width + 'px'; s.height = r.height + 'px';
       s.display = 'block';
     } else vid.style.display = 'none';
   }

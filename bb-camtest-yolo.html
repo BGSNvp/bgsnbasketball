@@ -36,12 +36,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 
-const ref = doc(getFirestore(initializeApp(firebaseConfig)), 'basketball', 'camtest');
+const ref = doc(getFirestore(initializeApp(firebaseConfig)), 'basketball', 'camtest' + (new URLSearchParams(location.search).get('ch') || ''));
 const $ = id => document.getElementById(id);
 const v = $('v');
 const big = (t, c) => { $('big').textContent = t; $('big').className = c; };
 const detail = t => { $('detail').textContent = t; };
-let pc = null, handled = 0, reported = '', timer = null, lastFrames = 0, lastAt = 0;
+let pc = null, handled = 0, reported = '', timer = null, lastFrames = 0, lastAt = 0, playChecks = 0;
 
 function report(s) {
   if (s === reported) return;
@@ -75,8 +75,10 @@ async function answer(sdp, ts) {
     big('Phone found – connecting…', 'wait');
     pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
     pc.ontrack = e => {
-      v.srcObject = e.streams && e.streams[0] ? e.streams[0] : new MediaStream([e.track]);
-      const p = v.play(); if (p && p.catch) p.catch(err => { big('Video blocked: ' + err.message, 'bad'); report('video blocked: ' + err.message); });
+      const ms = e.streams && e.streams[0] ? e.streams[0] : new MediaStream([e.track]);
+      if (v.srcObject === ms) return;
+      v.srcObject = ms;
+      const p = v.play(); if (p && p.catch) p.catch(err => { if (err.name === 'AbortError') return; big('Video blocked: ' + err.message, 'bad'); report('video blocked: ' + err.message); });
     };
     pc.onconnectionstatechange = () => {
       const s = pc.connectionState;
@@ -87,7 +89,7 @@ async function answer(sdp, ts) {
     await pc.setLocalDescription(await pc.createAnswer());
     await gathered(pc);
     await setDoc(ref, { answer: pc.localDescription.sdp, answerTs: ts }, { merge: true });
-    lastFrames = 0; lastAt = Date.now();
+    lastFrames = 0; lastAt = Date.now(); playChecks = 0;
     timer = setInterval(check, 2000);
   } catch (e) {
     big('Error: ' + e.message, 'bad'); report('error: ' + e.message);
@@ -112,7 +114,8 @@ async function check() {
   const playing = fps > 0 && v.videoWidth > 0 && !v.paused;
   if (playing) {
     big('YES: live video is playing', 'ok');
-    report('YES: playing ' + v.videoWidth + 'x' + v.videoHeight + ' at about ' + fps + ' fps' + (path ? ', ' + path : ''));
+    // Report once, after ~10s of playback, so the fps reading is settled and Firebase is written only once.
+    if (++playChecks === 5) report('YES: playing ' + v.videoWidth + 'x' + v.videoHeight + ' at about ' + fps + ' fps' + (path ? ', ' + path : ''));
   } else if (pc.connectionState === 'connected') {
     big('Connected, but no picture yet…', 'wait');
     if (frames === 0) report('connected but no video frames');

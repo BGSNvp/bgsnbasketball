@@ -149,7 +149,7 @@ async function start() {
     if (!outStream) outStream = out.captureStream(30);
     if (!looping) { looping = true; next(); }
     listCams();
-    try { wake = await navigator.wakeLock.request('screen'); } catch (e) {}
+    keepAwake();
     $('go').textContent = 'STOP'; $('go').classList.add('stop');
     lastWant = doc.want || 0;
     offer();
@@ -166,9 +166,17 @@ function stop() {
   say('Stopped');
 }
 
-document.addEventListener('visibilitychange', async () => {
-  if (cam && document.visibilityState === 'visible' && !wake) try { wake = await navigator.wakeLock.request('screen'); } catch (e) {}
-});
+// The browser drops the screen lock whenever the page is hidden, so take it again each time it comes back.
+async function keepAwake() {
+  if (wake || !navigator.wakeLock) return;
+  try {
+    const w = await navigator.wakeLock.request('screen');
+    if (!cam) { w.release().catch(() => {}); return; }
+    wake = w;
+    w.addEventListener('release', () => { if (wake === w) wake = null; });
+  } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => { if (cam && document.visibilityState === 'visible') keepAwake(); });
 $('go').onclick = () => cam ? stop() : start();
 listCams();
 </script>

@@ -76,7 +76,8 @@
   .sponsor { background: #0b0b0b; border-top: 2px solid var(--gold); padding: 4px 12px; text-align: center; font: 700 18px 'Oswald', sans-serif;
     letter-spacing: 3px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #sponsorInner { transition: opacity 0.5s; }
-  .sponsor small { color: var(--gold); font-size: 14px; margin-right: 10px; }
+  /* The smaller PRESENTED BY shares the name's baseline, so lift it to sit centered in the bar too */
+  .sponsor small { color: var(--gold); font-size: 14px; margin-right: 10px; position: relative; top: -2px; }
   .sponsor.off { display: none; }
 
   /* ─── Two bottom tickers (same look and controls as the football overlay) ─── */

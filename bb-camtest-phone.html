@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BGSN Basketball – Camera Test (Phone)</title>
+<style>
+  body { margin: 0; background: #000; color: #fff; font: 700 20px Arial, sans-serif; padding: 14px; }
+  h1 { font-size: 24px; margin: 0 0 10px; color: #00e5ff; }
+  .box { border: 2px solid #00e5ff; border-radius: 10px; padding: 12px; margin-bottom: 12px; box-shadow: 0 0 10px #00e5ff66; }
+  select, button { font: 700 22px Arial, sans-serif; width: 100%; padding: 14px; margin-top: 8px; border-radius: 8px; border: 2px solid #fff; background: #111; color: #fff; }
+  #go { background: #0a7d2c; } #go.stop { background: #a31515; }
+  #status { font-size: 22px; } #yolo { font-size: 22px; color: #ffd54a; }
+  video { width: 100%; background: #222; border-radius: 8px; margin-top: 8px; }
+  .note { color: #fff; font-weight: 400; font-size: 17px; }
+</style>
+</head>
+<body>
+<h1>CAMERA TEST – PHONE</h1>
+<div class="box">
+  <div class="note">1. Connect this phone to the same Wi-Fi as the YoloBox. 2. Pick the back camera. 3. Press START. Keep this page open.</div>
+  <select id="cam"><option value="">Back camera</option></select>
+  <button id="go">START</button>
+</div>
+<div class="box"><div id="status">Not started</div><div id="path" class="note"></div></div>
+<div class="box"><div class="note">YoloBox page says:</div><div id="yolo">(nothing yet)</div></div>
+<video id="preview" autoplay playsinline muted></video>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { firebaseConfig } from "./firebase-config.js";
+
+const ref = doc(getFirestore(initializeApp(firebaseConfig)), 'basketball', 'camtest');
+const $ = id => document.getElementById(id);
+const say = (t, c) => { $('status').textContent = t; $('status').style.color = c || '#fff'; };
+let pc = null, stream = null, myTs = 0, statsTimer = null, wake = null;
+
+onSnapshot(ref, snap => {
+  const d = snap.exists() ? snap.data() : {};
+  if (d.yoloStatus) $('yolo').textContent = d.yoloStatus;
+  if (pc && d.answer && d.answerTs === myTs && pc.signalingState === 'have-local-offer') {
+    pc.setRemoteDescription({ type: 'answer', sdp: d.answer }).catch(e => say('Answer error: ' + e.message, '#ff6b6b'));
+    say('YoloBox answered – connecting…', '#ffd54a');
+  }
+});
+
+async function listCams() {
+  try {
+    const devs = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput');
+    const sel = $('cam'), cur = sel.value;
+    sel.innerHTML = '<option value="">Back camera</option>' + devs.map((d, i) => '<option value="' + d.deviceId + '">' + (d.label || 'Camera ' + (i + 1)) + '</option>').join('');
+    sel.value = cur;
+  } catch (e) {}
+}
+
+function gathered(p) {
+  return new Promise(res => {
+    if (p.iceGatheringState === 'complete') return res();
+    const t = setTimeout(res, 3000);
+    p.addEventListener('icegatheringstatechange', () => { if (p.iceGatheringState === 'complete') { clearTimeout(t); res(); } });
+  });
+}
+
+function stop() {
+  clearInterval(statsTimer);
+  if (pc) pc.close(); pc = null;
+  if (stream) stream.getTracks().forEach(t => t.stop()); stream = null;
+  if (wake) { wake.release().catch(() => {}); wake = null; }
+  $('go').textContent = 'START'; $('go').classList.remove('stop'); $('path').textContent = '';
+  say('Stopped');
+}
+
+async function start() {
+  try {
+    say('Opening camera…');
+    const id = $('cam').value;
+    stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: Object.assign(
+      { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } },
+      id ? { deviceId: { exact: id } } : { facingMode: { ideal: 'environment' } }) });
+    $('preview').srcObject = stream;
+    listCams();
+    try { wake = await navigator.wakeLock.request('screen'); } catch (e) {}
+    $('go').textContent = 'STOP'; $('go').classList.add('stop');
+
+    pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+    stream.getTracks().forEach(t => pc.addTrack(t, stream));
+    pc.onconnectionstatechange = () => {
+      const s = pc.connectionState;
+      if (s === 'connected') say('CONNECTED – sending video', '#4dff88');
+      else if (s === 'failed') say('Connection failed – press STOP, then START', '#ff6b6b');
+      else if (s === 'disconnected') say('Connection lost…', '#ff6b6b');
+    };
+    await pc.setLocalDescription(await pc.createOffer());
+    await gathered(pc);
+    myTs = Date.now();
+    await setDoc(ref, { offer: pc.localDescription.sdp, offerTs: myTs, answer: '', answerTs: 0, yoloStatus: 'waiting for YoloBox page…' });
+    say('Waiting for the YoloBox test page…', '#ffd54a');
+
+    statsTimer = setInterval(async () => {
+      if (!pc) return;
+      const st = await pc.getStats(); let pair = null; const c = {};
+      st.forEach(r => { if (r.type === 'candidate-pair' && (r.selected || r.nominated) && r.state === 'succeeded') pair = r; if (r.type === 'local-candidate' || r.type === 'remote-candidate') c[r.id] = r; });
+      if (pair && c[pair.localCandidateId]) {
+        const l = c[pair.localCandidateId].candidateType, r = c[pair.remoteCandidateId] ? c[pair.remoteCandidateId].candidateType : '?';
+        $('path').textContent = (l === 'host' && r === 'host') ? 'Path: direct over Wi-Fi' : 'Path: ' + l + ' → ' + r;
+      }
+    }, 2000);
+  } catch (e) {
+    say('Error: ' + e.message, '#ff6b6b');
+  }
+}
+
+$('go').onclick = () => (pc || stream) ? stop() : start();
+listCams();
+</script>
+</body>
+</html>

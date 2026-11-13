@@ -74,12 +74,36 @@
   .fs .grp > label { font-size: clamp(14px, 1.8vw, 28px); }
   .fs .grp button { font-size: clamp(14px, 1.9vw, 30px); }
   .fs .note { font-size: clamp(14px, 1.4vw, 22px); margin-top: 0.8vw; }
+  /* Game View: clock, quarter, score, timeouts and fouls on one phone screen */
+  body.gameOn { overflow: hidden; }
+  #game { display: none; position: fixed; inset: 0; z-index: 60; background: var(--bg); padding: 6px; flex-direction: column; gap: 5px; height: 100vh; height: 100dvh; }
+  body.gameOn #game { display: flex; }
+  #game button { font-size: min(5.4vw, 3.6vh); padding: 0 2px; min-width: 0; height: 100%; }
+  .gtop { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+  .gtop h2 { margin: 0; font-size: min(5vw, 3.2vh); }
+  #game .gtop button { height: auto; padding: 3px 10px; font-size: min(4.6vw, 3vh); }
+  .gclock { display: flex; align-items: center; justify-content: center; gap: 3vw; }
+  #game .clock { font-size: min(14vw, 8.5vh); min-width: 0; }
+  #game .gclock button { height: min(13vw, 8vh); width: 30vw; font-size: min(6.5vw, 4.2vh); }
+  .g4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; height: min(11vw, 6.5vh); }
+  .gper { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; height: min(11vw, 6.5vh); }
+  #game .gper button { font-size: min(4.2vw, 3vh); letter-spacing: -0.5px; }
+  .gteams { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .gteam { border: 3px solid #3a3f4d; border-radius: 8px; padding: 4px; display: flex; flex-direction: column; gap: 4px; min-height: 0; min-width: 0; }
+  .gteam h3 { font-size: min(5vw, 3.3vh); letter-spacing: 1px; text-align: center; border-bottom: 3px solid; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gscore { font-family: 'Orbitron', sans-serif; font-size: min(12vw, 7.5vh); text-align: center; color: var(--gold); line-height: 1.05; }
+  .gsbtn { flex: 2.2; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .gstat { flex: 1.3; min-height: 0; display: flex; flex-direction: column; border-left: 5px solid; border-radius: 4px; padding: 1px 4px 3px; }
+  .gstat label { font-size: min(4.2vw, 2.7vh); }
+  .gstat > div { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1.1fr 1fr; gap: 4px; align-items: center; }
+  .gstat .num { font-size: min(8vw, 5vh); min-width: 0; }
+  #game .gstat button { font-size: min(8vw, 5vh); }
   @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } }
   @media (max-width: 560px) { .cols { grid-template-columns: 1fr; } .clock { font-size: 36px; } }
 </style>
 </head>
 <body>
-<header><h1>BGSN <span>BASKETBALL</span></h1><div id="status">Connecting…</div></header>
+<header><h1>BGSN <span>BASKETBALL</span></h1><button class="magic" id="gameOn">GAME VIEW</button><div id="status">Connecting…</div></header>
 <div class="wrap">
   <section>
     <h2>Game Clock</h2>
@@ -184,6 +208,27 @@
   </section>
 </div>
 
+<div id="game">
+  <div class="gtop"><h2>GAME VIEW</h2><button class="back" id="gameOff">✕ BACK</button></div>
+  <div class="gclock"><div class="clock" data-clockv>8:00</div><button class="go" data-startstop>START</button></div>
+  <div class="g4"><button data-adj="-10">−10s</button><button data-adj="-1">−1s</button><button data-adj="1">+1s</button><button data-adj="10">+10s</button></div>
+  <div class="gper" id="gPeriods"></div>
+  <div class="gteams">
+    <div class="gteam" data-gteam="away"><h3 data-ghdr="away">AWAY</h3>
+      <div class="gscore" data-v="awayScore">0</div>
+      <div class="gsbtn"><button data-score="away:1">+1</button><button data-score="away:2">+2</button><button data-score="away:3">+3</button><button data-score="away:-1">−1</button></div>
+      <div class="gstat s-to"><label>TIMEOUTS</label><div><button data-to="away:-1">−</button><span class="num" data-v="awayTO">5</span><button data-to="away:1">+</button></div></div>
+      <div class="gstat s-foul"><label>FOULS</label><div><button data-foul="away:-1">−</button><span class="num" data-v="awayFouls">0</span><button data-foul="away:1">+</button></div></div>
+    </div>
+    <div class="gteam" data-gteam="home"><h3 data-ghdr="home">HOME</h3>
+      <div class="gscore" data-v="homeScore">0</div>
+      <div class="gsbtn"><button data-score="home:1">+1</button><button data-score="home:2">+2</button><button data-score="home:3">+3</button><button data-score="home:-1">−1</button></div>
+      <div class="gstat s-to"><label>TIMEOUTS</label><div><button data-to="home:-1">−</button><span class="num" data-v="homeTO">5</span><button data-to="home:1">+</button></div></div>
+      <div class="gstat s-foul"><label>FOULS</label><div><button data-foul="home:-1">−</button><span class="num" data-v="homeFouls">0</span><button data-foul="home:1">+</button></div></div>
+    </div>
+  </div>
+</div>
+
 <script type="module">
   import { subscribe, save, configured } from './bb-store.js';
   import { withDefaults, clockRemaining, formatClock } from './bb-common.js';
@@ -210,12 +255,16 @@
     if (d.clockRunning) put({ clockRunning: false, clockMs: ms });
     else if (ms > 0) put({ clockRunning: true, clockMs: ms, clockStartAt: Date.now() });
   }
-  $('startStop').onclick = startStop;
+  document.querySelectorAll('#startStop, [data-startstop]').forEach(b => b.onclick = startStop);
+  function gameView(on) { document.body.classList.toggle('gameOn', on); try { localStorage.setItem('bbGameView', on ? '1' : ''); } catch (e) {} }
+  $('gameOn').onclick = () => gameView(true);
+  $('gameOff').onclick = () => gameView(false);
+  try { if (localStorage.getItem('bbGameView')) gameView(true); } catch (e) {}
   function bigView(on) { $('stats').classList.toggle('fs', on); document.body.classList.toggle('fsOn', on); }
   $('bigOn').onclick = () => bigView(true);
   $('bigOff').onclick = () => bigView(false);
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') bigView(false);
+    if (e.key === 'Escape') { bigView(false); gameView(false); }
     if (e.code === 'Space' && !/INPUT|TEXTAREA|SELECT|BUTTON/.test(document.activeElement.tagName)) { e.preventDefault(); startStop(); }
   });
   document.querySelectorAll('[data-adj]').forEach(b => b.onclick = () => clockSet(clockRemaining(d) + Number(b.dataset.adj) * 1000));
@@ -234,8 +283,7 @@
   }
   setInterval(() => {
     const ms = clockRemaining(d);
-    $('clock').textContent = formatClock(ms);
-    $('clock').classList.toggle('running', !!d.clockRunning);
+    document.querySelectorAll('#clock, [data-clockv]').forEach(c => { c.textContent = formatClock(ms); c.classList.toggle('running', !!d.clockRunning); });
     if (d.clockRunning && ms <= 0) put({ clockRunning: false, clockMs: 0 });
   }, 50);
 
@@ -262,6 +310,7 @@
     const b = document.createElement('button'); b.textContent = p.replace(/^(\d)(ST|ND|RD|TH)$/, '$1'); b.dataset.period = p;
     b.onclick = () => put(p !== d.period && QUARTERS.includes(p) ? { period: p, homeFouls: 0, awayFouls: 0 } : { period: p });
     $('periods').appendChild(b);
+    const g = b.cloneNode(true); g.onclick = b.onclick; $('gPeriods').appendChild(g);
   });
   document.querySelectorAll('[data-poss]').forEach(b => b.onclick = () => put({ poss: b.dataset.poss }));
 
@@ -360,17 +409,21 @@
       for (const k of ['Score', 'Fouls', 'TO']) $(t + k).textContent = d[t + k];
       document.querySelectorAll('.' + t + 'H, #' + t + 'Hdr').forEach(h => { h.textContent = d[t + 'Name']; h.style.borderColor = d[t + 'Color']; });
       document.querySelectorAll('.team[data-team="' + t + '"]').forEach(b => { b.style.borderColor = d[t + 'Color']; b.style.boxShadow = '0 0 8px ' + d[t + 'Color']; });
+      document.querySelectorAll('[data-ghdr="' + t + '"]').forEach(h => { h.textContent = d[t + 'Name']; h.style.borderColor = d[t + 'Color']; });
+      document.querySelectorAll('[data-gteam="' + t + '"]').forEach(b => b.style.borderColor = d[t + 'Color']);
       setVal(t + 'Name', d[t + 'Name']); setVal(t + 'Color', d[t + 'Color']);
       $(t + 'LogoPrev').src = d[t + 'Logo'] || '';
       $(t + 'LogoPrev').style.visibility = d[t + 'Logo'] ? 'visible' : 'hidden';
     }
+    document.querySelectorAll('[data-v]').forEach(el => el.textContent = d[el.dataset.v]);
     $('bonusAt').textContent = d.bonusAt; $('maxTO').textContent = d.maxTO;
     setVal('periodLen', Math.round(d.periodLen / 60)); setVal('sponsor', d.sponsor);
     document.querySelectorAll('[data-period]').forEach(b => b.classList.toggle('sel', b.dataset.period === d.period));
     document.querySelectorAll('[data-poss]').forEach(b => b.classList.toggle('sel', b.dataset.poss === d.poss));
     document.querySelectorAll('[data-cmode]').forEach(b => b.classList.toggle('sel', b.dataset.cmode === d.clockMode));
     renderCam();
-    const sb = $('startStop'); sb.textContent = d.clockRunning ? 'STOP' : 'START'; sb.className = 'big ' + (d.clockRunning ? 'stop' : 'go');
+    $('startStop').className = 'big';
+    document.querySelectorAll('#startStop, [data-startstop]').forEach(sb => { sb.textContent = d.clockRunning ? 'STOP' : 'START'; sb.classList.toggle('stop', !!d.clockRunning); sb.classList.toggle('go', !d.clockRunning); });
     $('toggleShow').textContent = d.visible === false ? 'SHOW SCOREBOARD' : 'HIDE SCOREBOARD';
     $('bugScaleV').textContent = Math.round((Number(d.bugScale) || 1) * 100) + '%';
     $('bugPosV').textContent = (Number(d.bugX) || 0) + ', ' + (Number(d.bugY) || 0);

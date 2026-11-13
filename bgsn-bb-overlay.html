@@ -182,7 +182,7 @@
       const nm = $(t + 'Name').parentElement;
       nm.style.setProperty('--nx', (Number(d[t + 'NameX']) || 0) + 'px');
       nm.style.setProperty('--ny', (Number(d[t + 'NameY']) || 0) + 'px');
-      const max = Math.max(0, Math.min(10, Number(d.maxTO) || 0));
+      const max = Math.max(0, Math.min(10, (Number(d.maxTO) || 0) + ({ OT: 1, '2OT': 2 }[d.period] || 0)));
       dots($(t + 'TOs'), Math.min(max, Number(d[t + 'TO']) || 0), max);
     }
     // A team is in the bonus when the OTHER team has reached the foul limit

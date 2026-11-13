@@ -274,7 +274,7 @@
   });
   bump('data-score', 'Score', 0, () => 999);
   bump('data-foul', 'Fouls', 0, () => 99);
-  bump('data-to', 'TO', 0, () => d.maxTO);
+  bump('data-to', 'TO', 0, () => Math.min(10, d.maxTO + (OT_EXTRA[d.period] || 0)));
   document.querySelectorAll('[data-bonus]').forEach(b => b.onclick = () => put({ bonusAt: clamp(d.bonusAt + Number(b.dataset.bonus), 0, 20) }));
   $('resetFouls').onclick = () => put({ homeFouls: 0, awayFouls: 0 });
   document.querySelectorAll('[data-maxto]').forEach(b => b.onclick = () => {
@@ -285,9 +285,17 @@
 
   // ─── Period / possession ───
   const QUARTERS = ['1ST', '2ND', '3RD', '4TH'];
+  // Each overtime adds 1 timeout to what's left; timeouts otherwise last the whole game.
+  const OT_EXTRA = { OT: 1, '2OT': 2 };
+  const RANK = { '1ST': 1, '2ND': 2, HALF: 2.5, '3RD': 3, '4TH': 4, OT: 5, '2OT': 6, FINAL: 7 };
   PERIODS.forEach(p => {
     const b = document.createElement('button'); b.textContent = p.replace(/^(\d)(ST|ND|RD|TH)$/, '$1'); b.dataset.period = p;
-    b.onclick = () => put(p !== d.period && QUARTERS.includes(p) ? { period: p, homeFouls: 0, awayFouls: 0 } : { period: p });
+    b.onclick = () => {
+      const ch = { period: p };
+      if (p !== d.period && QUARTERS.includes(p)) Object.assign(ch, { homeFouls: 0, awayFouls: 0 });
+      if (OT_EXTRA[p] && (RANK[p] || 0) > (RANK[d.period] || 0)) Object.assign(ch, { homeTO: clamp(d.homeTO + 1, 0, 10), awayTO: clamp(d.awayTO + 1, 0, 10) });
+      put(ch);
+    };
     $('periods').appendChild(b);
     const g = b.cloneNode(true); g.onclick = b.onclick; $('gPeriods').appendChild(g);
   });

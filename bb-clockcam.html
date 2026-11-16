@@ -73,8 +73,12 @@ $('full').onclick = () => { crop = { x: 0, y: 0, w: 1, h: 1 }; showSel(); localS
 showSel();
 
 // ─── Draw only the clock area into the canvas that is sent ───
-function draw() {
-  if (v.videoWidth) {
+const FPS = 10;
+let lastDraw = 0;
+function draw(now) {
+  now = now || performance.now();
+  if (v.videoWidth && now - lastDraw >= 1000 / FPS - 8) {
+    lastDraw = now;
     const sx = crop.x * v.videoWidth, sy = crop.y * v.videoHeight, sw = crop.w * v.videoWidth, sh = crop.h * v.videoHeight;
     let w = Math.min(640, Math.max(320, sw)), h = w * sh / sw;
     if (h > 360) { h = 360; w = h * sw / sh; }
@@ -147,7 +151,7 @@ async function start() {
       { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } },
       id ? { deviceId: { exact: id } } : { facingMode: { ideal: 'environment' } }) });
     v.srcObject = cam;
-    if (!outStream) outStream = out.captureStream(30);
+    if (!outStream) outStream = out.captureStream(FPS);
     if (!looping) { looping = true; next(); }
     listCams();
     keepAwake();
